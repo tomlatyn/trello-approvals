@@ -64,10 +64,14 @@
             margin-right: 10px;
             flex-shrink: 0;
             overflow: hidden;
-            background-color: #dfe1e6;
+            background-color: #0079bf;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
         }
         
         .avatar img {
@@ -75,14 +79,6 @@
             height: 100%;
             border-radius: 50%;
             object-fit: cover;
-        }
-        
-        .avatar-initials {
-            background-color: #0079bf;
-            color: white;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
         }
         
         .approval-member-info {
@@ -200,14 +196,28 @@
     </div>
     
     <div id="error" class="error" style="display: none;">
-        Unable to load approval status.
+        Unable to load approval status. Please refresh the page.
     </div>
     
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
     <script>
-        var t = TrelloPowerUp.iframe();
+        console.log('Approval section script starting...');
+        
+        // Try to get the Trello context
+        var t;
+        try {
+            t = window.TrelloPowerUp.iframe();
+            console.log('TrelloPowerUp context initialized');
+        } catch (error) {
+            console.error('Failed to initialize TrelloPowerUp:', error);
+            showError();
+            return;
+        }
+        
         var currentUserId = null;
         var approvalData = null;
+        var loadingAttempts = 0;
+        var maxAttempts = 3;
 
         function showLoading() {
             document.getElementById('loading').style.display = 'block';
@@ -230,48 +240,90 @@
             document.getElementById('error').style.display = 'none';
         }
         
-        function showError(message) {
+        function showError() {
             document.getElementById('loading').style.display = 'none';
             document.getElementById('approval-section').style.display = 'none';
             document.getElementById('no-approvals').style.display = 'none';
             document.getElementById('error').style.display = 'block';
-            
-            // Update error message if provided
-            if (message) {
-                document.querySelector('#error').textContent = message;
-            }
         }
         
         function loadApprovals() {
-            console.log('Loading approvals...');
+            console.log('Loading approvals, attempt:', loadingAttempts + 1);
+            loadingAttempts++;
             showLoading();
             
+            // Set a timeout for each individual call
+            var approvalDataPromise = new Promise(function(resolve, reject) {
+                var timeout = setTimeout(function() {
+                    reject(new Error('Timeout getting approval data'));
+                }, 5000);
+                
+                t.get('card', 'shared', 'approvals', null)
+                .then(function(data) {
+                    clearTimeout(timeout);
+                    resolve(data);
+                })
+                .catch(function(error) {
+                    clearTimeout(timeout);
+                    reject(error);
+                });
+            });
+            
+            var memberPromise = new Promise(function(resolve, reject) {
+                var timeout = setTimeout(function() {
+                    reject(new Error('Timeout getting member data'));
+                }, 5000);
+                
+                t.member('all')
+                .then(function(member) {
+                    clearTimeout(timeout);
+                    resolve(member);
+                })
+                .catch(function(error) {
+                    clearTimeout(timeout);
+                    reject(error);
+                });
+            });
+            
             // Load approval data first
-            t.get('card', 'shared', 'approvals', null)
+            approvalDataPromise
             .then(function(data) {
                 console.log('Approval data loaded:', data);
                 approvalData = data;
                 
-                // Then load current member
-                return t.member('all');
-            })
-            .then(function(member) {
-                console.log('Current member loaded:', member);
-                currentUserId = member.id;
-                
-                // Now check if we have approval data
                 if (!approvalData || !approvalData.members) {
                     console.log('No approval data found');
                     showNoApprovals();
-                } else {
-                    console.log('Displaying approvals');
-                    displayApprovals();
-                    showApprovals();
+                    return;
                 }
+                
+                // Now try to get current member with timeout
+                return memberPromise;
+            })
+            .then(function(member) {
+                console.log('Current member loaded:', member);
+                currentUserId = member ? member.id : null;
+                
+                console.log('Displaying approvals');
+                displayApprovals();
+                showApprovals();
             })
             .catch(function(error) {
                 console.error('Error loading approvals:', error);
-                showError('Error loading approvals: ' + error.message);
+                
+                // If we have approval data but failed to get member, show without actions
+                if (approvalData && approvalData.members) {
+                    console.log('Showing approvals without current user actions');
+                    currentUserId = null;
+                    displayApprovals();
+                    showApprovals();
+                } else if (loadingAttempts < maxAttempts) {
+                    console.log('Retrying in 2 seconds...');
+                    setTimeout(loadApprovals, 2000);
+                } else {
+                    console.log('Max attempts reached, showing error');
+                    showError();
+                }
             });
         }
         
@@ -308,8 +360,8 @@
                 var memberDiv = document.createElement('div');
                 memberDiv.className = 'approval-member';
                 
-                // Allow current user to change their own status (always)
-                var canAction = (member.id === currentUserId);
+                // Allow current user to change their own status (if we know who they are)
+                var canAction = currentUserId && (member.id === currentUserId);
                 if (canAction) {
                     memberDiv.classList.add('current-user');
                 }
@@ -324,13 +376,11 @@
                     img.onerror = function() {
                         // Fallback to initials if image fails
                         avatar.innerHTML = '';
-                        avatar.textContent = member.fullName ? member.fullName.charAt(0).toUpperCase() : '?';
-                        avatar.classList.add('avatar-initials');
+                        avatar.textContent = getInitials(member);
                     };
                     avatar.appendChild(img);
                 } else {
-                    avatar.textContent = member.fullName ? member.fullName.charAt(0).toUpperCase() : '?';
-                    avatar.classList.add('avatar-initials');
+                    avatar.textContent = getInitials(member);
                 }
                 
                 var memberInfo = document.createElement('div');
@@ -357,74 +407,70 @@
                 memberDiv.appendChild(memberInfo);
                 memberDiv.appendChild(statusSpan);
                 
-                // Add action buttons if current user (regardless of current status)
+                // Add action buttons if current user can act
                 if (canAction) {
-                    var actionButtons = document.createElement('div');
-                    actionButtons.className = 'action-buttons';
-                    
-                    // Show different buttons based on current status
-                    if (member.status === 'approved') {
-                        var rejectBtn = document.createElement('button');
-                        rejectBtn.className = 'action-btn reject-btn';
-                        rejectBtn.textContent = 'Reject';
-                        rejectBtn.addEventListener('click', function() {
-                            updateApprovalStatus(member.id, 'rejected');
-                        });
-                        actionButtons.appendChild(rejectBtn);
-                        
-                        var pendingBtn = document.createElement('button');
-                        pendingBtn.className = 'action-btn';
-                        pendingBtn.style.backgroundColor = '#ff9f1a';
-                        pendingBtn.style.color = 'white';
-                        pendingBtn.textContent = 'Reset';
-                        pendingBtn.addEventListener('click', function() {
-                            updateApprovalStatus(member.id, 'pending');
-                        });
-                        actionButtons.appendChild(pendingBtn);
-                        
-                    } else if (member.status === 'rejected') {
-                        var approveBtn = document.createElement('button');
-                        approveBtn.className = 'action-btn approve-btn';
-                        approveBtn.textContent = 'Approve';
-                        approveBtn.addEventListener('click', function() {
-                            updateApprovalStatus(member.id, 'approved');
-                        });
-                        actionButtons.appendChild(approveBtn);
-                        
-                        var pendingBtn = document.createElement('button');
-                        pendingBtn.className = 'action-btn';
-                        pendingBtn.style.backgroundColor = '#ff9f1a';
-                        pendingBtn.style.color = 'white';
-                        pendingBtn.textContent = 'Reset';
-                        pendingBtn.addEventListener('click', function() {
-                            updateApprovalStatus(member.id, 'pending');
-                        });
-                        actionButtons.appendChild(pendingBtn);
-                        
-                    } else { // pending
-                        var approveBtn = document.createElement('button');
-                        approveBtn.className = 'action-btn approve-btn';
-                        approveBtn.textContent = 'Approve';
-                        approveBtn.addEventListener('click', function() {
-                            updateApprovalStatus(member.id, 'approved');
-                        });
-                        
-                        var rejectBtn = document.createElement('button');
-                        rejectBtn.className = 'action-btn reject-btn';
-                        rejectBtn.textContent = 'Reject';
-                        rejectBtn.addEventListener('click', function() {
-                            updateApprovalStatus(member.id, 'rejected');
-                        });
-                        
-                        actionButtons.appendChild(approveBtn);
-                        actionButtons.appendChild(rejectBtn);
-                    }
-                    
+                    var actionButtons = createActionButtons(member);
                     memberDiv.appendChild(actionButtons);
                 }
                 
                 approvalsList.appendChild(memberDiv);
             });
+        }
+        
+        function getInitials(member) {
+            if (member.fullName) {
+                var parts = member.fullName.split(' ');
+                return parts.length > 1 ? 
+                    parts[0].charAt(0).toUpperCase() + parts[1].charAt(0).toUpperCase() :
+                    parts[0].charAt(0).toUpperCase();
+            } else if (member.username) {
+                return member.username.charAt(0).toUpperCase();
+            }
+            return '?';
+        }
+        
+        function createActionButtons(member) {
+            var actionButtons = document.createElement('div');
+            actionButtons.className = 'action-buttons';
+            
+            if (member.status === 'approved') {
+                actionButtons.appendChild(createButton('Reject', 'reject-btn', function() {
+                    updateApprovalStatus(member.id, 'rejected');
+                }));
+                actionButtons.appendChild(createButton('Reset', 'action-btn', function() {
+                    updateApprovalStatus(member.id, 'pending');
+                }, '#ff9f1a'));
+                
+            } else if (member.status === 'rejected') {
+                actionButtons.appendChild(createButton('Approve', 'approve-btn', function() {
+                    updateApprovalStatus(member.id, 'approved');
+                }));
+                actionButtons.appendChild(createButton('Reset', 'action-btn', function() {
+                    updateApprovalStatus(member.id, 'pending');
+                }, '#ff9f1a'));
+                
+            } else { // pending
+                actionButtons.appendChild(createButton('Approve', 'approve-btn', function() {
+                    updateApprovalStatus(member.id, 'approved');
+                }));
+                actionButtons.appendChild(createButton('Reject', 'reject-btn', function() {
+                    updateApprovalStatus(member.id, 'rejected');
+                }));
+            }
+            
+            return actionButtons;
+        }
+        
+        function createButton(text, className, onClick, backgroundColor) {
+            var button = document.createElement('button');
+            button.className = 'action-btn ' + className;
+            button.textContent = text;
+            if (backgroundColor) {
+                button.style.backgroundColor = backgroundColor;
+                button.style.color = 'white';
+            }
+            button.addEventListener('click', onClick);
+            return button;
         }
         
         function updateApprovalStatus(memberId, status) {
@@ -439,29 +485,29 @@
             approvalData.members[memberId].status = status;
             approvalData.members[memberId].actionDate = new Date().toISOString();
             
-            // Save updated data
+            // Save updated data with timeout
+            var saveTimeout = setTimeout(function() {
+                console.error('Save timeout');
+                alert('Save timeout. Please try again.');
+            }, 10000);
+            
             t.set('card', 'shared', 'approvals', approvalData)
             .then(function() {
+                clearTimeout(saveTimeout);
                 console.log('Approval status updated successfully');
-                // Refresh the display
                 displayApprovals();
             })
             .catch(function(error) {
+                clearTimeout(saveTimeout);
                 console.error('Error updating approval status:', error);
                 alert('Failed to update approval status. Please try again.');
             });
         }
         
-        // Add a timeout fallback
+        // Start loading with a small delay to ensure DOM is ready
         setTimeout(function() {
-            if (document.getElementById('loading').style.display !== 'none') {
-                console.log('Loading timeout - trying alternative approach');
-                showError('Loading timeout. Please refresh the page.');
-            }
-        }, 10000); // 10 second timeout
-        
-        // Load approvals when section opens
-        loadApprovals();
+            loadApprovals();
+        }, 100);
     </script>
 </body>
 </html>
