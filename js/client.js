@@ -7,15 +7,18 @@ TrelloPowerUp.initialize({
         return null;
       }
       
-      return {
-        title: 'Approvals',
-        icon: 'https://cdn-icons-png.flaticon.com/512/3024/3024593.png',
-        content: {
-          type: 'iframe',
-          url: './approval-section.html',
-          height: 350
-        }
-      };
+      // Sign the URL as required for card-back-section
+      return t.signUrl('./approval-section.html').then(function(signedUrl) {
+        return {
+          title: 'Approvals',
+          icon: 'https://cdn-icons-png.flaticon.com/512/3024/3024593.png',
+          content: {
+            type: 'iframe',
+            url: signedUrl,
+            height: 350
+          }
+        };
+      });
     });
   },
   

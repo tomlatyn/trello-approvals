@@ -201,7 +201,20 @@
     
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
     <script>
-        var t = TrelloPowerUp.iframe();
+        // For card-back-section, we need to use a different approach
+        var t;
+        try {
+            // Try to initialize with secret from URL
+            t = TrelloPowerUp.iframe({
+                appKey: window.location.search.includes('app-key') ? 
+                    new URLSearchParams(window.location.search).get('app-key') : undefined,
+                appName: 'Approvals Power-Up'
+            });
+        } catch (error) {
+            console.log('Using basic iframe initialization');
+            t = TrelloPowerUp.iframe();
+        }
+        
         var currentUserId = null;
         var approvalData = null;
 
