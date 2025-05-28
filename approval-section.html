@@ -488,6 +488,27 @@
                 }
             }
         });
+
+        // Listen for messages from the iframe's parent (for parent context handling updates)
+        window.addEventListener('message', function(event) {
+          const data = event.data;
+          if (data && data.type === 'UPDATE_APPROVAL_STATUS') {
+            console.log('Received approval status update from iframe:', data);
+
+            t.set('card', 'shared', 'approvals', {
+              members: data.allMembersData,
+              updatedAt: new Date().toISOString()
+            })
+            .then(() => {
+              console.log('Approval data saved via parent context');
+              event.source.postMessage({ type: 'APPROVAL_SAVE_RESULT', success: true }, event.origin);
+            })
+            .catch((err) => {
+              console.error('Failed to save approval data in parent:', err);
+              event.source.postMessage({ type: 'APPROVAL_SAVE_RESULT', success: false, error: err.message }, event.origin);
+            });
+          }
+        });
         
         // Load approvals from URL params
         loadApprovals();
