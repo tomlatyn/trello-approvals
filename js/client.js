@@ -1,41 +1,39 @@
 TrelloPowerUp.initialize({
-  // Card detail badges - shows approval table directly in card detail
-  'card-detail-badges': function(t, opts) {
+  // Card back section - shows approval table directly in card detail
+  'card-back-section': function(t, opts) {
     return t.get('card', 'shared', 'approvals', null)
     .then(function(approvalData) {
       if (!approvalData || !approvalData.members) {
-        return [];
+        return null;
       }
       
       // Get current member info
       return t.member('all').then(function(currentMember) {
-        return [{
+        // Pass data to the iframe via URL parameters
+        var members = Object.values(approvalData.members);
+        var totalCount = members.length;
+        var approvedCount = members.filter(m => m.status === 'approved').length;
+        var rejectedCount = members.filter(m => m.status === 'rejected').length;
+        var pendingCount = members.filter(m => m.status === 'pending').length;
+        
+        var params = new URLSearchParams({
+          currentUserId: currentMember.id,
+          totalCount: totalCount,
+          approvedCount: approvedCount,
+          rejectedCount: rejectedCount,
+          pendingCount: pendingCount,
+          membersData: JSON.stringify(approvalData.members)
+        });
+        
+        return {
           title: 'Approvals',
-          text: 'Manage Status',
-          color: 'blue',
-          callback: function(t) {
-            // Pass data to the iframe via URL parameters
-            var members = Object.values(approvalData.members);
-            var totalCount = members.length;
-            var approvedCount = members.filter(m => m.status === 'approved').length;
-            var rejectedCount = members.filter(m => m.status === 'rejected').length;
-            var pendingCount = members.filter(m => m.status === 'pending').length;
-            
-            var params = new URLSearchParams({
-              currentUserId: currentMember.id,
-              totalCount: totalCount,
-              approvedCount: approvedCount,
-              rejectedCount: rejectedCount,
-              pendingCount: pendingCount,
-              membersData: JSON.stringify(approvalData.members)
-            });
-            
-            return t.attach({
-              url: './approval-section.html?' + params.toString(),
-              height: 350
-            });
+          icon: 'https://cdn-icons-png.flaticon.com/512/3024/3024593.png',
+          content: {
+            type: 'iframe',
+            url: './approval-section.html?' + params.toString(),
+            height: 350
           }
-        }];
+        };
       });
     });
   },
