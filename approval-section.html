@@ -14,15 +14,6 @@
             line-height: 1.4;
         }
         
-        .debug-info {
-            background-color: #f0f8ff;
-            border: 1px solid #0079bf;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
-            font-size: 12px;
-        }
-        
         .approval-section {
             border: 1px solid #dfe1e6;
             border-radius: 6px;
@@ -192,11 +183,6 @@
     </style>
 </head>
 <body>
-    <div class="debug-info">
-        <strong>🔍 DEBUG MODE</strong>
-        <div id="debug-output">Starting...</div>
-    </div>
-    
     <div id="loading" class="loading">
         Loading approval status...
     </div>
@@ -219,277 +205,263 @@
     
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
     <script>
-        var debugOutput = document.getElementById('debug-output');
-        
-        function addDebug(message) {
-            console.log('DEBUG:', message);
-            debugOutput.innerHTML += '<br>' + message;
+        var t = TrelloPowerUp.iframe();
+        var currentUserId = null;
+        var approvalData = null;
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('approval-section').style.display = 'none';
+            document.getElementById('no-approvals').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
         }
         
-        addDebug('Script started');
+        function showApprovals() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('approval-section').style.display = 'block';
+            document.getElementById('no-approvals').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+        }
         
-        try {
-            var t = TrelloPowerUp.iframe();
-            addDebug('TrelloPowerUp.iframe() initialized');
+        function showNoApprovals() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('approval-section').style.display = 'none';
+            document.getElementById('no-approvals').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+        }
+        
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('approval-section').style.display = 'none';
+            document.getElementById('no-approvals').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
             
-            var currentUserId = null;
-            var approvalData = null;
-
-            function showLoading() {
-                addDebug('showLoading() called');
-                document.getElementById('loading').style.display = 'block';
-                document.getElementById('approval-section').style.display = 'none';
-                document.getElementById('no-approvals').style.display = 'none';
-                document.getElementById('error').style.display = 'none';
+            // Update error message if provided
+            if (message) {
+                document.querySelector('#error').textContent = message;
             }
+        }
+        
+        function loadApprovals() {
+            console.log('Loading approvals...');
+            showLoading();
             
-            function showApprovals() {
-                addDebug('showApprovals() called');
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('approval-section').style.display = 'block';
-                document.getElementById('no-approvals').style.display = 'none';
-                document.getElementById('error').style.display = 'none';
-            }
-            
-            function showNoApprovals() {
-                addDebug('showNoApprovals() called');
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('approval-section').style.display = 'none';
-                document.getElementById('no-approvals').style.display = 'block';
-                document.getElementById('error').style.display = 'none';
-            }
-            
-            function showError(message) {
-                addDebug('showError() called: ' + message);
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('approval-section').style.display = 'none';
-                document.getElementById('no-approvals').style.display = 'none';
-                document.getElementById('error').style.display = 'block';
-            }
-            
-            function loadApprovals() {
-                addDebug('loadApprovals() called');
-                showLoading();
+            // Load approval data first
+            t.get('card', 'shared', 'approvals', null)
+            .then(function(data) {
+                console.log('Approval data loaded:', data);
+                approvalData = data;
                 
-                addDebug('Calling t.get() and t.member()...');
+                // Then load current member
+                return t.member('all');
+            })
+            .then(function(member) {
+                console.log('Current member loaded:', member);
+                currentUserId = member.id;
                 
-                Promise.all([
-                    t.get('card', 'shared', 'approvals', null),
-                    t.member('all')
-                ])
-                .then(function(results) {
-                    addDebug('Promise.all resolved');
-                    approvalData = results[0];
-                    currentUserId = results[1].id;
-                    
-                    addDebug('Approval data: ' + (approvalData ? 'exists' : 'null'));
-                    addDebug('Current user ID: ' + currentUserId);
-                    
-                    if (!approvalData || !approvalData.members) {
-                        addDebug('No approval data found, showing no approvals');
-                        showNoApprovals();
-                    } else {
-                        addDebug('Approval data found, displaying approvals');
-                        displayApprovals();
-                        showApprovals();
-                    }
-                })
-                .catch(function(error) {
-                    addDebug('Promise.all rejected: ' + error.message);
-                    console.error('Error loading approvals:', error);
-                    showError('Error: ' + error.message);
-                });
-            }
-            
-            function displayApprovals() {
-                addDebug('displayApprovals() called');
-                var approvalsList = document.getElementById('approvals-list');
-                var summaryDiv = document.getElementById('approval-summary');
-                
-                approvalsList.innerHTML = '';
-                
-                var members = Object.values(approvalData.members);
-                addDebug('Found ' + members.length + ' members');
-                
-                var totalCount = members.length;
-                var approvedCount = members.filter(m => m.status === 'approved').length;
-                var rejectedCount = members.filter(m => m.status === 'rejected').length;
-                var pendingCount = members.filter(m => m.status === 'pending').length;
-                
-                // Update summary
-                summaryDiv.textContent = approvedCount + '/' + totalCount + ' approved';
-                if (rejectedCount > 0) {
-                    summaryDiv.textContent += ', ' + rejectedCount + ' rejected';
+                // Now check if we have approval data
+                if (!approvalData || !approvalData.members) {
+                    console.log('No approval data found');
+                    showNoApprovals();
+                } else {
+                    console.log('Displaying approvals');
+                    displayApprovals();
+                    showApprovals();
                 }
-                if (pendingCount > 0) {
-                    summaryDiv.textContent += ', ' + pendingCount + ' pending';
+            })
+            .catch(function(error) {
+                console.error('Error loading approvals:', error);
+                showError('Error loading approvals: ' + error.message);
+            });
+        }
+        
+        function displayApprovals() {
+            console.log('Displaying approvals for', Object.keys(approvalData.members).length, 'members');
+            
+            var approvalsList = document.getElementById('approvals-list');
+            var summaryDiv = document.getElementById('approval-summary');
+            
+            approvalsList.innerHTML = '';
+            
+            var members = Object.values(approvalData.members);
+            var totalCount = members.length;
+            var approvedCount = members.filter(m => m.status === 'approved').length;
+            var rejectedCount = members.filter(m => m.status === 'rejected').length;
+            var pendingCount = members.filter(m => m.status === 'pending').length;
+            
+            // Update summary
+            summaryDiv.textContent = approvedCount + '/' + totalCount + ' approved';
+            if (rejectedCount > 0) {
+                summaryDiv.textContent += ', ' + rejectedCount + ' rejected';
+            }
+            if (pendingCount > 0) {
+                summaryDiv.textContent += ', ' + pendingCount + ' pending';
+            }
+            
+            // Sort members by status (pending first, then approved, then rejected)
+            members.sort(function(a, b) {
+                var statusOrder = { 'pending': 0, 'approved': 1, 'rejected': 2 };
+                return statusOrder[a.status] - statusOrder[b.status];
+            });
+            
+            members.forEach(function(member) {
+                var memberDiv = document.createElement('div');
+                memberDiv.className = 'approval-member';
+                
+                // Allow current user to change their own status (always)
+                var canAction = (member.id === currentUserId);
+                if (canAction) {
+                    memberDiv.classList.add('current-user');
                 }
                 
-                addDebug('Summary: ' + summaryDiv.textContent);
+                var avatar = document.createElement('div');
+                avatar.className = 'avatar';
                 
-                // Sort members by status (pending first, then approved, then rejected)
-                members.sort(function(a, b) {
-                    var statusOrder = { 'pending': 0, 'approved': 1, 'rejected': 2 };
-                    return statusOrder[a.status] - statusOrder[b.status];
-                });
-                
-                members.forEach(function(member, index) {
-                    addDebug('Processing member ' + index + ': ' + member.fullName);
-                    
-                    var memberDiv = document.createElement('div');
-                    memberDiv.className = 'approval-member';
-                    
-                    // Allow current user to change their own status (always)
-                    var canAction = (member.id === currentUserId);
-                    if (canAction) {
-                        memberDiv.classList.add('current-user');
-                        addDebug('Member is current user - can take action');
-                    }
-                    
-                    var avatar = document.createElement('div');
-                    avatar.className = 'avatar';
-                    
-                    if (member.avatarUrl) {
-                        var img = document.createElement('img');
-                        img.src = member.avatarUrl;
-                        img.alt = member.fullName || member.username;
-                        avatar.appendChild(img);
-                    } else {
+                if (member.avatarUrl) {
+                    var img = document.createElement('img');
+                    img.src = member.avatarUrl;
+                    img.alt = member.fullName || member.username;
+                    img.onerror = function() {
+                        // Fallback to initials if image fails
+                        avatar.innerHTML = '';
                         avatar.textContent = member.fullName ? member.fullName.charAt(0).toUpperCase() : '?';
                         avatar.classList.add('avatar-initials');
-                    }
-                    
-                    var memberInfo = document.createElement('div');
-                    memberInfo.className = 'approval-member-info';
-                    
-                    var name = document.createElement('div');
-                    name.className = 'member-name';
-                    name.textContent = member.fullName || member.username || 'Unknown Member';
-                    
-                    memberInfo.appendChild(name);
-                    
-                    if (member.username) {
-                        var username = document.createElement('div');
-                        username.className = 'member-username';
-                        username.textContent = '@' + member.username;
-                        memberInfo.appendChild(username);
-                    }
-                    
-                    var statusSpan = document.createElement('span');
-                    statusSpan.className = 'approval-status status-' + member.status;
-                    statusSpan.textContent = member.status;
-                    
-                    memberDiv.appendChild(avatar);
-                    memberDiv.appendChild(memberInfo);
-                    memberDiv.appendChild(statusSpan);
-                    
-                    // Add action buttons if current user (regardless of current status)
-                    if (canAction) {
-                        var actionButtons = document.createElement('div');
-                        actionButtons.className = 'action-buttons';
-                        
-                        // Show different buttons based on current status
-                        if (member.status === 'approved') {
-                            var rejectBtn = document.createElement('button');
-                            rejectBtn.className = 'action-btn reject-btn';
-                            rejectBtn.textContent = 'Reject';
-                            rejectBtn.addEventListener('click', function() {
-                                updateApprovalStatus(member.id, 'rejected');
-                            });
-                            actionButtons.appendChild(rejectBtn);
-                            
-                            var pendingBtn = document.createElement('button');
-                            pendingBtn.className = 'action-btn';
-                            pendingBtn.style.backgroundColor = '#ff9f1a';
-                            pendingBtn.style.color = 'white';
-                            pendingBtn.textContent = 'Reset';
-                            pendingBtn.addEventListener('click', function() {
-                                updateApprovalStatus(member.id, 'pending');
-                            });
-                            actionButtons.appendChild(pendingBtn);
-                            
-                        } else if (member.status === 'rejected') {
-                            var approveBtn = document.createElement('button');
-                            approveBtn.className = 'action-btn approve-btn';
-                            approveBtn.textContent = 'Approve';
-                            approveBtn.addEventListener('click', function() {
-                                updateApprovalStatus(member.id, 'approved');
-                            });
-                            actionButtons.appendChild(approveBtn);
-                            
-                            var pendingBtn = document.createElement('button');
-                            pendingBtn.className = 'action-btn';
-                            pendingBtn.style.backgroundColor = '#ff9f1a';
-                            pendingBtn.style.color = 'white';
-                            pendingBtn.textContent = 'Reset';
-                            pendingBtn.addEventListener('click', function() {
-                                updateApprovalStatus(member.id, 'pending');
-                            });
-                            actionButtons.appendChild(pendingBtn);
-                            
-                        } else { // pending
-                            var approveBtn = document.createElement('button');
-                            approveBtn.className = 'action-btn approve-btn';
-                            approveBtn.textContent = 'Approve';
-                            approveBtn.addEventListener('click', function() {
-                                updateApprovalStatus(member.id, 'approved');
-                            });
-                            
-                            var rejectBtn = document.createElement('button');
-                            rejectBtn.className = 'action-btn reject-btn';
-                            rejectBtn.textContent = 'Reject';
-                            rejectBtn.addEventListener('click', function() {
-                                updateApprovalStatus(member.id, 'rejected');
-                            });
-                            
-                            actionButtons.appendChild(approveBtn);
-                            actionButtons.appendChild(rejectBtn);
-                        }
-                        
-                        memberDiv.appendChild(actionButtons);
-                    }
-                    
-                    approvalsList.appendChild(memberDiv);
-                });
-                
-                addDebug('Finished displaying all members');
-            }
-            
-            function updateApprovalStatus(memberId, status) {
-                addDebug('updateApprovalStatus called: ' + memberId + ' -> ' + status);
-                
-                if (!approvalData || !approvalData.members[memberId]) {
-                    console.error('Invalid approval data or member ID');
-                    return;
+                    };
+                    avatar.appendChild(img);
+                } else {
+                    avatar.textContent = member.fullName ? member.fullName.charAt(0).toUpperCase() : '?';
+                    avatar.classList.add('avatar-initials');
                 }
                 
-                // Update the member's status
-                approvalData.members[memberId].status = status;
-                approvalData.members[memberId].actionDate = new Date().toISOString();
+                var memberInfo = document.createElement('div');
+                memberInfo.className = 'approval-member-info';
                 
-                // Save updated data
-                t.set('card', 'shared', 'approvals', approvalData)
-                .then(function() {
-                    addDebug('Status updated successfully');
-                    console.log('Approval status updated successfully');
-                    // Refresh the display
-                    displayApprovals();
-                })
-                .catch(function(error) {
-                    addDebug('Error updating status: ' + error.message);
-                    console.error('Error updating approval status:', error);
-                    alert('Failed to update approval status. Please try again.');
-                });
+                var name = document.createElement('div');
+                name.className = 'member-name';
+                name.textContent = member.fullName || member.username || 'Unknown Member';
+                
+                memberInfo.appendChild(name);
+                
+                if (member.username) {
+                    var username = document.createElement('div');
+                    username.className = 'member-username';
+                    username.textContent = '@' + member.username;
+                    memberInfo.appendChild(username);
+                }
+                
+                var statusSpan = document.createElement('span');
+                statusSpan.className = 'approval-status status-' + member.status;
+                statusSpan.textContent = member.status;
+                
+                memberDiv.appendChild(avatar);
+                memberDiv.appendChild(memberInfo);
+                memberDiv.appendChild(statusSpan);
+                
+                // Add action buttons if current user (regardless of current status)
+                if (canAction) {
+                    var actionButtons = document.createElement('div');
+                    actionButtons.className = 'action-buttons';
+                    
+                    // Show different buttons based on current status
+                    if (member.status === 'approved') {
+                        var rejectBtn = document.createElement('button');
+                        rejectBtn.className = 'action-btn reject-btn';
+                        rejectBtn.textContent = 'Reject';
+                        rejectBtn.addEventListener('click', function() {
+                            updateApprovalStatus(member.id, 'rejected');
+                        });
+                        actionButtons.appendChild(rejectBtn);
+                        
+                        var pendingBtn = document.createElement('button');
+                        pendingBtn.className = 'action-btn';
+                        pendingBtn.style.backgroundColor = '#ff9f1a';
+                        pendingBtn.style.color = 'white';
+                        pendingBtn.textContent = 'Reset';
+                        pendingBtn.addEventListener('click', function() {
+                            updateApprovalStatus(member.id, 'pending');
+                        });
+                        actionButtons.appendChild(pendingBtn);
+                        
+                    } else if (member.status === 'rejected') {
+                        var approveBtn = document.createElement('button');
+                        approveBtn.className = 'action-btn approve-btn';
+                        approveBtn.textContent = 'Approve';
+                        approveBtn.addEventListener('click', function() {
+                            updateApprovalStatus(member.id, 'approved');
+                        });
+                        actionButtons.appendChild(approveBtn);
+                        
+                        var pendingBtn = document.createElement('button');
+                        pendingBtn.className = 'action-btn';
+                        pendingBtn.style.backgroundColor = '#ff9f1a';
+                        pendingBtn.style.color = 'white';
+                        pendingBtn.textContent = 'Reset';
+                        pendingBtn.addEventListener('click', function() {
+                            updateApprovalStatus(member.id, 'pending');
+                        });
+                        actionButtons.appendChild(pendingBtn);
+                        
+                    } else { // pending
+                        var approveBtn = document.createElement('button');
+                        approveBtn.className = 'action-btn approve-btn';
+                        approveBtn.textContent = 'Approve';
+                        approveBtn.addEventListener('click', function() {
+                            updateApprovalStatus(member.id, 'approved');
+                        });
+                        
+                        var rejectBtn = document.createElement('button');
+                        rejectBtn.className = 'action-btn reject-btn';
+                        rejectBtn.textContent = 'Reject';
+                        rejectBtn.addEventListener('click', function() {
+                            updateApprovalStatus(member.id, 'rejected');
+                        });
+                        
+                        actionButtons.appendChild(approveBtn);
+                        actionButtons.appendChild(rejectBtn);
+                    }
+                    
+                    memberDiv.appendChild(actionButtons);
+                }
+                
+                approvalsList.appendChild(memberDiv);
+            });
+        }
+        
+        function updateApprovalStatus(memberId, status) {
+            console.log('Updating approval status:', memberId, 'to', status);
+            
+            if (!approvalData || !approvalData.members[memberId]) {
+                console.error('Invalid approval data or member ID');
+                return;
             }
             
-            addDebug('About to call loadApprovals()');
-            // Load approvals when section opens
-            loadApprovals();
+            // Update the member's status
+            approvalData.members[memberId].status = status;
+            approvalData.members[memberId].actionDate = new Date().toISOString();
             
-        } catch (error) {
-            addDebug('Caught error: ' + error.message);
-            console.error('Script error:', error);
+            // Save updated data
+            t.set('card', 'shared', 'approvals', approvalData)
+            .then(function() {
+                console.log('Approval status updated successfully');
+                // Refresh the display
+                displayApprovals();
+            })
+            .catch(function(error) {
+                console.error('Error updating approval status:', error);
+                alert('Failed to update approval status. Please try again.');
+            });
         }
+        
+        // Add a timeout fallback
+        setTimeout(function() {
+            if (document.getElementById('loading').style.display !== 'none') {
+                console.log('Loading timeout - trying alternative approach');
+                showError('Loading timeout. Please refresh the page.');
+            }
+        }, 10000); // 10 second timeout
+        
+        // Load approvals when section opens
+        loadApprovals();
     </script>
 </body>
 </html>
