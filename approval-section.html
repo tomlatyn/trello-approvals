@@ -18,8 +18,45 @@
         
         /* Remove the card-like container, make it blend with Trello */
         .approval-container {
-            padding: 0;
-            background-color: transparent;
+            padding: 8px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 3px;
+            backdrop-filter: blur(2px);
+        }
+        
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .approval-container {
+                background-color: rgba(30, 30, 30, 0.95);
+                color: #b6c2cf;
+            }
+            
+            body {
+                color: #b6c2cf;
+            }
+            
+            .member-name {
+                color: #b6c2cf;
+            }
+            
+            .approval-member:hover {
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+            
+            .approval-member {
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .reset-btn {
+                background-color: rgba(255, 255, 255, 0.1);
+                color: #9fadbc;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+            }
+            
+            .reset-btn:hover {
+                background-color: rgba(255, 255, 255, 0.15);
+                color: #b6c2cf;
+            }
         }
         
         /* Header that matches Trello's section headers */
