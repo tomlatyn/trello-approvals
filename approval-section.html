@@ -12,6 +12,8 @@
             color: #172b4d;
             font-size: 14px;
             line-height: 1.4;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+            box-sizing: border-box;
         }
         
         .approval-section {
@@ -20,6 +22,8 @@
             background-color: #f4f5f7;
             padding: 16px;
             margin-bottom: 16px;
+            width: 100%;
+            box-sizing: border-box;
         }
         
         .approval-header {
@@ -127,6 +131,7 @@
             display: flex;
             gap: 6px;
             margin-left: 12px;
+            flex-shrink: 0; /* Prevent buttons from shrinking */
         }
         
         .action-btn {
@@ -217,6 +222,8 @@
             document.getElementById('approval-section').style.display = 'block';
             document.getElementById('no-approvals').style.display = 'none';
             document.getElementById('error').style.display = 'none';
+
+            resizeToContent();
         }
         
         function showNoApprovals() {
@@ -224,6 +231,8 @@
             document.getElementById('approval-section').style.display = 'none';
             document.getElementById('no-approvals').style.display = 'block';
             document.getElementById('error').style.display = 'none';
+
+            resizeToContent();
         }
         
         function showError() {
@@ -349,6 +358,8 @@
                 
                 approvalsList.appendChild(memberDiv);
             });
+
+            resizeToContent();
         }
         
         function getInitials(member) {
@@ -361,6 +372,33 @@
                 return member.username.charAt(0).toUpperCase();
             }
             return '?';
+        }
+
+        function resizeToContent() {
+            // Wait for DOM to update, then resize
+            setTimeout(function() {
+                var body = document.body;
+                var html = document.documentElement;
+                
+                // Get the full height of the content
+                var height = Math.max(
+                    body.scrollHeight,
+                    body.offsetHeight,
+                    html.clientHeight,
+                    html.scrollHeight,
+                    html.offsetHeight
+                );
+                
+                // Add some padding to prevent cutting off
+                height += 20;
+                
+                // Resize the iframe to fit content
+                t.sizeTo('body').catch(function(error) {
+                    console.log('Resize failed, trying alternative:', error);
+                    // Alternative resize method
+                    t.sizeTo('#approval-section');
+                });
+            }, 50);
         }
         
         function createActionButtons(member) {
@@ -439,6 +477,8 @@
                 // Reload the approvals to reset the display
                 loadApprovals();
             });
+
+            resizeToContent();
         }
         
         // Load approvals when section opens
