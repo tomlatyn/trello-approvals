@@ -57,6 +57,11 @@
             border-color: #ff9f1a;
         }
         
+        .approval-member.current-user {
+            background-color: #e4f3ff;
+            border-color: #0079bf;
+        }
+        
         .avatar {
             width: 28px;
             height: 28px;
@@ -295,9 +300,10 @@
                 var memberDiv = document.createElement('div');
                 memberDiv.className = 'approval-member';
                 
-                var canAction = (member.id === currentUserId && member.status === 'pending');
+                // Allow current user to change their own status (always)
+                var canAction = (member.id === currentUserId);
                 if (canAction) {
-                    memberDiv.classList.add('can-action');
+                    memberDiv.classList.add('current-user');
                 }
                 
                 var avatar = document.createElement('div');
@@ -337,27 +343,69 @@
                 memberDiv.appendChild(memberInfo);
                 memberDiv.appendChild(statusSpan);
                 
-                // Add action buttons if current user can act
+                // Add action buttons if current user (regardless of current status)
                 if (canAction) {
                     var actionButtons = document.createElement('div');
                     actionButtons.className = 'action-buttons';
                     
-                    var approveBtn = document.createElement('button');
-                    approveBtn.className = 'action-btn approve-btn';
-                    approveBtn.textContent = 'Approve';
-                    approveBtn.addEventListener('click', function() {
-                        updateApprovalStatus(member.id, 'approved');
-                    });
+                    // Show different buttons based on current status
+                    if (member.status === 'approved') {
+                        var rejectBtn = document.createElement('button');
+                        rejectBtn.className = 'action-btn reject-btn';
+                        rejectBtn.textContent = 'Reject';
+                        rejectBtn.addEventListener('click', function() {
+                            updateApprovalStatus(member.id, 'rejected');
+                        });
+                        actionButtons.appendChild(rejectBtn);
+                        
+                        var pendingBtn = document.createElement('button');
+                        pendingBtn.className = 'action-btn';
+                        pendingBtn.style.backgroundColor = '#ff9f1a';
+                        pendingBtn.style.color = 'white';
+                        pendingBtn.textContent = 'Reset';
+                        pendingBtn.addEventListener('click', function() {
+                            updateApprovalStatus(member.id, 'pending');
+                        });
+                        actionButtons.appendChild(pendingBtn);
+                        
+                    } else if (member.status === 'rejected') {
+                        var approveBtn = document.createElement('button');
+                        approveBtn.className = 'action-btn approve-btn';
+                        approveBtn.textContent = 'Approve';
+                        approveBtn.addEventListener('click', function() {
+                            updateApprovalStatus(member.id, 'approved');
+                        });
+                        actionButtons.appendChild(approveBtn);
+                        
+                        var pendingBtn = document.createElement('button');
+                        pendingBtn.className = 'action-btn';
+                        pendingBtn.style.backgroundColor = '#ff9f1a';
+                        pendingBtn.style.color = 'white';
+                        pendingBtn.textContent = 'Reset';
+                        pendingBtn.addEventListener('click', function() {
+                            updateApprovalStatus(member.id, 'pending');
+                        });
+                        actionButtons.appendChild(pendingBtn);
+                        
+                    } else { // pending
+                        var approveBtn = document.createElement('button');
+                        approveBtn.className = 'action-btn approve-btn';
+                        approveBtn.textContent = 'Approve';
+                        approveBtn.addEventListener('click', function() {
+                            updateApprovalStatus(member.id, 'approved');
+                        });
+                        
+                        var rejectBtn = document.createElement('button');
+                        rejectBtn.className = 'action-btn reject-btn';
+                        rejectBtn.textContent = 'Reject';
+                        rejectBtn.addEventListener('click', function() {
+                            updateApprovalStatus(member.id, 'rejected');
+                        });
+                        
+                        actionButtons.appendChild(approveBtn);
+                        actionButtons.appendChild(rejectBtn);
+                    }
                     
-                    var rejectBtn = document.createElement('button');
-                    rejectBtn.className = 'action-btn reject-btn';
-                    rejectBtn.textContent = 'Reject';
-                    rejectBtn.addEventListener('click', function() {
-                        updateApprovalStatus(member.id, 'rejected');
-                    });
-                    
-                    actionButtons.appendChild(approveBtn);
-                    actionButtons.appendChild(rejectBtn);
                     memberDiv.appendChild(actionButtons);
                 }
                 

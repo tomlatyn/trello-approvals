@@ -1,25 +1,5 @@
 TrelloPowerUp.initialize({
-  // Card detail badges - shows approval table in card detail view
-  'card-detail-badges': function(t, opts) {
-    return t.get('card', 'shared', 'approvals', null)
-    .then(function(approvalData) {
-      if (!approvalData || !approvalData.members) {
-        return [];
-      }
-      
-      return [{
-        title: 'Approval Status',
-        text: 'View Approvals',
-        color: 'blue',
-        callback: function(t) {
-          return t.attach({
-            url: './approval-section.html',
-            height: 400
-          });
-        }
-      }];
-    });
-  },
+  // No card detail badges needed
   
   // Card buttons - always shows "Approvals" button in sidebar
   'card-buttons': function(t, opts) {
@@ -71,7 +51,7 @@ TrelloPowerUp.initialize({
     });
   },
   
-  // Attachment sections - shows approval table below description
+  // Attachment sections - shows approval table directly below description
   'attachment-sections': function(t, opts) {
     return t.get('card', 'shared', 'approvals', null)
     .then(function(approvalData) {
@@ -81,12 +61,12 @@ TrelloPowerUp.initialize({
       
       return [{
         id: 'approvals',
-        claimed: [{ url: './approval-section.html' }],
-        title: 'Approval Status',
+        claimed: [],
+        title: 'Approvals',
         content: {
           type: 'iframe',
           url: './approval-section.html',
-          height: 300
+          height: 350
         }
       }];
     });
