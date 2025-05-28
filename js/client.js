@@ -4,7 +4,7 @@ TrelloPowerUp.initialize({
     return t.get('card', 'shared', 'approvals', null)
     .then(function(approvalData) {
       if (!approvalData || !approvalData.members) {
-        return null; // Don't show section if no approvals
+        return null;
       }
       
       return {
@@ -12,8 +12,9 @@ TrelloPowerUp.initialize({
         icon: 'https://cdn-icons-png.flaticon.com/512/3024/3024593.png',
         content: {
           type: 'iframe',
-          url: t.signUrl('./approval-section.html'),
-          height: 350
+          url: t.signUrl('./approval-section.html')
+          // No height specified = auto height
+          // No resize: false = allows resizing
         }
       };
     })
