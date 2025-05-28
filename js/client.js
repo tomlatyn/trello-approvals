@@ -1,5 +1,23 @@
 TrelloPowerUp.initialize({
-  // No card detail badges needed
+  // Card back section - shows approval table directly in card detail
+  'card-back-section': function(t, opts) {
+    return t.get('card', 'shared', 'approvals', null)
+    .then(function(approvalData) {
+      if (!approvalData || !approvalData.members) {
+        return null;
+      }
+      
+      return {
+        title: 'Approvals',
+        icon: 'https://cdn-icons-png.flaticon.com/512/3024/3024593.png',
+        content: {
+          type: 'iframe',
+          url: './approval-section.html',
+          height: 350
+        }
+      };
+    });
+  },
   
   // Card buttons - always shows "Approvals" button in sidebar
   'card-buttons': function(t, opts) {
@@ -47,27 +65,6 @@ TrelloPowerUp.initialize({
       return [{
         text: badgeText,
         color: badgeColor
-      }];
-    });
-  },
-  
-  // Attachment sections - shows approval table directly below description
-  'attachment-sections': function(t, opts) {
-    return t.get('card', 'shared', 'approvals', null)
-    .then(function(approvalData) {
-      if (!approvalData || !approvalData.members) {
-        return [];
-      }
-      
-      return [{
-        id: 'approvals',
-        claimed: [],
-        title: 'Approvals',
-        content: {
-          type: 'iframe',
-          url: './approval-section.html',
-          height: 350
-        }
       }];
     });
   }
