@@ -416,42 +416,47 @@
             };
             displayApprovals(params);
             
-            // Create full approval data structure - need to preserve original metadata
-            var approvalData = {
-                members: membersData,
-                createdAt: new Date().toISOString(), // This might need to be preserved
-                createdBy: null // This might need to be preserved
-            };
-            
-            console.log('Saving approval data:', approvalData);
-            
-            // Try multiple approaches to save data
-            var savePromise = new Promise(function(resolve, reject) {
-                var timeout = setTimeout(function() {
-                    reject(new Error('Save timeout after 8 seconds'));
-                }, 8000);
+            // Try to communicate with parent window to save data
+            try {
+                console.log('Attempting to communicate with parent window...');
+                
+                // Use postMessage to communicate with parent
+                var messageData = {
+                    type: 'UPDATE_APPROVAL_STATUS',
+                    memberId: memberId,
+                    status: status,
+                    timestamp: new Date().toISOString(),
+                    allMembersData: membersData
+                };
+                
+                console.log('Sending message to parent:', messageData);
+                window.parent.postMessage(messageData, '*');
+                
+                // Also try direct t.set() as backup
+                console.log('Trying direct t.set() as backup...');
+                var approvalData = {
+                    members: membersData,
+                    createdAt: new Date().toISOString(),
+                    createdBy: null
+                };
+                
+                // Shortened timeout for direct approach
+                var saveTimeout = setTimeout(function() {
+                    console.log('Direct save timed out, relying on parent communication');
+                }, 3000);
                 
                 t.set('card', 'shared', 'approvals', approvalData)
-                .then(function(result) {
-                    clearTimeout(timeout);
-                    console.log('Save successful:', result);
-                    resolve(result);
+                .then(function() {
+                    clearTimeout(saveTimeout);
+                    console.log('Direct save successful!');
                 })
                 .catch(function(error) {
-                    clearTimeout(timeout);
-                    console.error('Save failed:', error);
-                    reject(error);
+                    clearTimeout(saveTimeout);
+                    console.log('Direct save failed, relying on parent communication:', error.message);
                 });
-            });
-            
-            savePromise
-            .then(function() {
-                console.log('Approval status updated successfully');
-                // Optionally reload the whole card to refresh all Power-Up instances
-                // t.closePopup(); // This would close if it was a popup
-            })
-            .catch(function(error) {
-                console.error('Error updating approval status:', error);
+                
+            } catch (error) {
+                console.error('Error in updateApprovalStatus:', error);
                 
                 // Revert local data on failure
                 membersData[memberId].status = oldStatus;
@@ -466,9 +471,23 @@
                 };
                 displayApprovals(revertParams);
                 
-                alert('Failed to update approval status: ' + error.message + '. Please try refreshing the card.');
-            });
+                alert('Failed to update approval status. Please try again.');
+            }
         }
+        
+        // Listen for messages from parent window
+        window.addEventListener('message', function(event) {
+            console.log('Received message from parent:', event.data);
+            
+            if (event.data && event.data.type === 'APPROVAL_SAVE_RESULT') {
+                if (event.data.success) {
+                    console.log('Parent confirmed save was successful');
+                } else {
+                    console.error('Parent reported save failed:', event.data.error);
+                    alert('Failed to save approval status: ' + event.data.error);
+                }
+            }
+        });
         
         // Load approvals from URL params
         loadApprovals();

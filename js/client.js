@@ -108,4 +108,27 @@ TrelloPowerUp.initialize({
       }];
     });
   },
+  
+  // Remove attachment sections for now
+  /*
+  'attachment-sections': function(t, opts) {
+    return t.get('card', 'shared', 'approvals', null)
+    .then(function(approvalData) {
+      if (!approvalData || !approvalData.members) {
+        return [];
+      }
+      
+      return [{
+        id: 'approvals',
+        claimed: [],
+        title: 'Approvals',
+        content: {
+          type: 'iframe',
+          url: './approval-section.html',
+          height: 350
+        }
+      }];
+    });
+  }
+  */
 });
