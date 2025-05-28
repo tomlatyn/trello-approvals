@@ -2,25 +2,25 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Workspace Members</title>
+    <title>Board Members</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div id="loading" class="loading">
         <div class="spinner"></div>
-        <p>Loading workspace members...</p>
+        <p>Loading board members...</p>
     </div>
     
     <div id="content" class="content hidden">
         <div class="header">
-            <h3>Workspace Members</h3>
+            <h3>Board Members</h3>
             <div id="member-count" class="member-count"></div>
         </div>
         <div id="members-list" class="members-list"></div>
     </div>
     
     <div id="error" class="error hidden">
-        <p>Unable to load workspace members</p>
+        <p>Unable to load board members</p>
         <button id="retry-btn" class="btn">Retry</button>
     </div>
     
@@ -47,98 +47,45 @@
             
             var errorDiv = document.getElementById('error');
             var errorMsg = errorDiv.querySelector('p');
-            errorMsg.textContent = message || 'Unable to load workspace members';
+            errorMsg.textContent = message || 'Unable to load board members';
         }
         
-        function loadWorkspaceMembers() {
+        function loadBoardMembers() {
             showLoading();
             
-            console.log('Starting to load workspace members...');
+            console.log('Loading board members...');
             
-            // First try to get board information
-            t.board('all')
-            .then(function(board) {
-                console.log('Board info:', board);
+            // Get board members directly
+            t.board('members')
+            .then(function(members) {
+                console.log('Board members loaded:', members);
                 
-                // Check if we have organization info
-                if (board.idOrganization) {
-                    console.log('Board has organization:', board.idOrganization);
-                    // Try to get organization info
-                    return t.organization('all');
-                } else {
-                    console.log('Board is not part of a workspace, showing board members');
-                    // Fallback to board members
-                    return t.board('members').then(function(members) {
-                        if (members && members.length > 0) {
-                            displayMembers(members);
-                            showContent();
-                            
-                            // Update header to show it's board members
-                            var header = document.querySelector('.header h3');
-                            header.textContent = 'Board Members';
-                            return;
-                        } else {
-                            throw new Error('No board members found');
-                        }
-                    });
-                }
-            })
-            .then(function(org) {
-                if (!org) return; // Already handled board members case above
-                
-                console.log('Organization info:', org);
-                
-                // Try to get organization members using available methods
-                if (org.members) {
-                    // If organization object includes members
-                    console.log('Found members in organization object');
-                    displayMembers(org.members);
+                if (members && members.length > 0) {
+                    displayMembers(members);
                     showContent();
                 } else {
-                    // Try alternative approach - get board members as fallback
-                    console.log('No members in org object, falling back to board members');
-                    return t.board('members').then(function(members) {
-                        if (members && members.length > 0) {
-                            displayMembers(members);
-                            showContent();
-                            
-                            // Update header to indicate limited scope
-                            var header = document.querySelector('.header h3');
-                            header.textContent = 'Board Members (Limited Access)';
-                        } else {
-                            throw new Error('No members found');
-                        }
-                    });
+                    throw new Error('No board members found');
                 }
             })
             .catch(function(error) {
-                console.error('Error loading members:', error);
+                console.error('Error loading board members:', error);
                 
-                // Try one more fallback - current member only
+                // Fallback: try to get current member only
                 t.member('all').then(function(currentMember) {
                     if (currentMember) {
                         console.log('Showing current member as fallback');
                         displayMembers([currentMember]);
                         showContent();
                         
+                        // Update header to show it's just current member
                         var header = document.querySelector('.header h3');
                         header.textContent = 'Current Member';
                     } else {
                         throw new Error('No member data available');
                     }
                 }).catch(function(finalError) {
-                    console.error('All methods failed:', finalError);
-                    
-                    var errorMessage = 'Unable to load members. ';
-                    if (error.message.includes('workspace')) {
-                        errorMessage += 'Make sure this board is part of a workspace/team.';
-                    } else if (error.message.includes('permission')) {
-                        errorMessage += 'Insufficient permissions to access member data.';
-                    } else {
-                        errorMessage += 'Please try again or contact support.';
-                    }
-                    
-                    showError(errorMessage);
+                    console.error('All attempts failed:', finalError);
+                    showError('Unable to load board members. Please try again.');
                 });
             });
         }
@@ -229,36 +176,11 @@
         
         // Retry button functionality
         document.getElementById('retry-btn').addEventListener('click', function() {
-            loadWorkspaceMembers();
+            loadBoardMembers();
         });
         
-        // Debug function to test what's available
-        function debugCapabilities() {
-            console.log('=== Debugging Power-Up Capabilities ===');
-            
-            console.log('Available methods on t:', Object.keys(t));
-            
-            t.board('all').then(board => {
-                console.log('Board data:', board);
-                console.log('Board members available:', !!board.members);
-                console.log('Organization ID:', board.idOrganization);
-            }).catch(e => console.log('Board access error:', e));
-            
-            t.organization('all').then(org => {
-                console.log('Organization data:', org);
-                console.log('Org members available:', !!org.members);
-            }).catch(e => console.log('Organization access error:', e));
-            
-            t.member('all').then(member => {
-                console.log('Current member data:', member);
-            }).catch(e => console.log('Member access error:', e));
-        }
-        
-        // Run debug on load
-        debugCapabilities();
-        
         // Load members when popup opens
-        loadWorkspaceMembers();
+        loadBoardMembers();
     </script>
 </body>
 </html>
