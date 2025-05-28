@@ -2,31 +2,9 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>DEBUG - Member Loading</title>
+    <title>Create Approvals</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
-        .debug-section {
-            background-color: #f0f8ff;
-            border: 1px solid #0079bf;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
-            font-size: 12px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        
-        .debug-section h4 {
-            margin: 0 0 8px 0;
-            color: #0079bf;
-        }
-        
-        .debug-section pre {
-            margin: 0;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-        
         .member-item {
             cursor: pointer;
             transition: background-color 0.2s;
@@ -63,6 +41,23 @@
             font-weight: 600;
         }
         
+        .create-approval-button:hover:not(:disabled) {
+            background-color: #005a8b;
+        }
+        
+        .create-approval-button:disabled {
+            background-color: #dfe1e6;
+            color: #a5adba;
+            cursor: not-allowed;
+        }
+        
+        .selected-count {
+            color: #0079bf;
+            font-weight: 500;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+        
         .member-item-content {
             display: flex;
             align-items: center;
@@ -71,11 +66,6 @@
     </style>
 </head>
 <body>
-    <div class="debug-section">
-        <h4>🔍 Debug Information</h4>
-        <div id="debug-info">Loading debug info...</div>
-    </div>
-    
     <div id="loading" class="loading">
         <div class="spinner"></div>
         <p>Loading board members...</p>
@@ -103,13 +93,6 @@
         var t = TrelloPowerUp.iframe();
         var allMembers = [];
         var selectedMembers = [];
-        var debugInfo = document.getElementById('debug-info');
-
-        function addDebugInfo(title, data) {
-            var debugSection = document.createElement('div');
-            debugSection.innerHTML = '<strong>' + title + ':</strong><br><pre>' + JSON.stringify(data, null, 2) + '</pre><br>';
-            debugInfo.appendChild(debugSection);
-        }
 
         function showLoading() {
             document.getElementById('loading').classList.remove('hidden');
@@ -135,7 +118,6 @@
         
         function loadBoardMembers() {
             showLoading();
-            addDebugInfo('🚀 Starting member loading process', 'Initializing...');
             
             console.log('Starting to load board members...');
             
@@ -143,102 +125,84 @@
             t.board('all')
             .then(function(board) {
                 console.log('Board info:', board);
-                addDebugInfo('📋 Board Data (t.board("all"))', {
-                    id: board.id,
-                    name: board.name,
-                    idOrganization: board.idOrganization,
-                    hasMembers: !!board.members,
-                    membersCount: board.members ? board.members.length : 0,
-                    members: board.members || 'No members property'
-                });
+                
+                // Check if we have members directly in board data
+                if (board.members && board.members.length > 0) {
+                    console.log('Found members in board.members:', board.members.length);
+                    allMembers = board.members;
+                    displayMembers(board.members);
+                    showContent();
+                    return null; // Skip organization check
+                }
                 
                 // Check if we have organization info
                 if (board.idOrganization) {
-                    addDebugInfo('🏢 Board has organization', 'ID: ' + board.idOrganization);
                     console.log('Board has organization:', board.idOrganization);
                     // Try to get organization info
                     return t.organization('all');
                 } else {
-                    addDebugInfo('👤 Board is personal (no organization)', 'Trying board members directly');
                     console.log('Board is not part of a workspace, trying board members');
-                    
                     // Try t.board('members') directly
-                    return t.board('members').then(function(members) {
-                        addDebugInfo('👥 t.board("members") result', {
-                            hasMembers: !!members,
-                            count: members ? members.length : 0,
-                            members: members
-                        });
-                        
-                        if (members && members.length > 0) {
-                            allMembers = members;
-                            displayMembers(members);
-                            showContent();
-                            
-                            var header = document.querySelector('.header h3');
-                            header.textContent = 'Create Approvals - Board Members (' + members.length + ')';
-                            return;
-                        } else {
-                            throw new Error('No board members found via t.board("members")');
-                        }
-                    });
+                    return t.board('members');
                 }
             })
-            .then(function(org) {
-                if (!org) return; // Already handled board members case above
+            .then(function(result) {
+                if (!result) return; // Already handled board.members case above
                 
-                console.log('Organization info:', org);
-                addDebugInfo('🏢 Organization Data (t.organization("all"))', {
-                    id: org.id,
-                    name: org.name,
-                    displayName: org.displayName,
-                    hasMembers: !!org.members,
-                    membersCount: org.members ? org.members.length : 0,
-                    members: org.members || 'No members property'
-                });
-                
-                // Try to get organization members using available methods
-                if (org.members) {
-                    addDebugInfo('✅ Found members in organization object', 'Count: ' + org.members.length);
-                    console.log('Found members in organization object');
-                    allMembers = org.members;
-                    displayMembers(org.members);
-                    showContent();
+                // Check if this is organization data
+                if (result.id && result.name && result.hasOwnProperty('members')) {
+                    console.log('Organization info:', result);
+                    
+                    // Try to get organization members
+                    if (result.members && result.members.length > 0) {
+                        console.log('Found members in organization object');
+                        allMembers = result.members;
+                        displayMembers(result.members);
+                        showContent();
+                        return;
+                    } else {
+                        console.log('No members in org object, falling back to board members');
+                        return t.board('members');
+                    }
                 } else {
-                    addDebugInfo('⚠️ No members in org object, trying board members fallback', 'Attempting t.board("members")');
-                    console.log('No members in org object, falling back to board members');
-                    return t.board('members').then(function(members) {
-                        addDebugInfo('👥 Fallback t.board("members") result', {
-                            hasMembers: !!members,
-                            count: members ? members.length : 0,
-                            members: members
-                        });
-                        
-                        if (members && members.length > 0) {
-                            allMembers = members;
-                            displayMembers(members);
-                            showContent();
-                            
-                            var header = document.querySelector('.header h3');
-                            header.textContent = 'Create Approvals - Board Members (' + members.length + ')';
-                        } else {
-                            throw new Error('No members found in fallback');
+                    // This is the result from t.board('members')
+                    console.log('Board members result:', result);
+                    
+                    var members = null;
+                    
+                    // Handle different possible structures
+                    if (Array.isArray(result)) {
+                        // Direct array of members
+                        members = result;
+                    } else if (result.members) {
+                        // Check for nested structure like: { members: { members: [...] } }
+                        if (result.members.members && Array.isArray(result.members.members)) {
+                            members = result.members.members;
+                        } else if (Array.isArray(result.members)) {
+                            members = result.members;
                         }
-                    });
+                    }
+                    
+                    console.log('Extracted members:', members);
+                    
+                    if (members && members.length > 0) {
+                        allMembers = members;
+                        displayMembers(members);
+                        showContent();
+                        
+                        var header = document.querySelector('.header h3');
+                        header.textContent = 'Create Approvals - Board Members (' + members.length + ')';
+                        return;
+                    } else {
+                        throw new Error('No board members found');
+                    }
                 }
             })
             .catch(function(error) {
                 console.error('Error loading members:', error);
-                addDebugInfo('❌ Error occurred', {
-                    message: error.message,
-                    stack: error.stack
-                });
                 
                 // Try one more fallback - current member only
-                addDebugInfo('🔄 Trying final fallback - current member only', 'Using t.member("all")');
                 t.member('all').then(function(currentMember) {
-                    addDebugInfo('👤 Current Member Data', currentMember);
-                    
                     if (currentMember) {
                         console.log('Showing current member as fallback');
                         allMembers = [currentMember];
@@ -252,12 +216,7 @@
                     }
                 }).catch(function(finalError) {
                     console.error('All methods failed:', finalError);
-                    addDebugInfo('💥 All methods failed', {
-                        finalError: finalError.message,
-                        originalError: error.message
-                    });
-                    
-                    showError('Unable to load any member data. Check debug info above.');
+                    showError('Unable to load any member data. Please try again.');
                 });
             });
         }
@@ -266,13 +225,17 @@
             var membersList = document.getElementById('members-list');
             var memberCount = document.getElementById('member-count');
             
-            addDebugInfo('🎨 Displaying Members', {
-                count: members.length,
-                memberNames: members.map(m => m.fullName || m.username)
-            });
+            console.log('Displaying members:', members);
             
             memberCount.textContent = members.length + ' member' + (members.length !== 1 ? 's' : '');
             membersList.innerHTML = '';
+            
+            // Sort members by full name
+            members.sort(function(a, b) {
+                var nameA = a.fullName || a.username || '';
+                var nameB = b.fullName || b.username || '';
+                return nameA.localeCompare(nameB);
+            });
             
             members.forEach(function(member) {
                 var memberItem = document.createElement('div');
@@ -285,12 +248,33 @@
                 var checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 checkbox.className = 'member-checkbox';
+                checkbox.addEventListener('change', function() {
+                    toggleMemberSelection(member.id);
+                });
                 
                 var avatar = document.createElement('div');
-                avatar.className = 'avatar avatar-initials';
-                avatar.textContent = member.initials || 
-                    (member.username ? member.username.charAt(0).toUpperCase() : 
-                     (member.fullName ? member.fullName.charAt(0).toUpperCase() : '?'));
+                avatar.className = 'avatar';
+                
+                // Handle avatar - use the 'avatar' property from your debug data
+                var avatarUrl = member.avatar || member.avatarUrl;
+                if (avatarUrl) {
+                    // Use the avatar URL as-is (it's already the right size from your debug data)
+                    var img = document.createElement('img');
+                    img.src = avatarUrl;
+                    img.alt = member.fullName || member.username || 'Member';
+                    img.onerror = function() {
+                        avatar.innerHTML = '';
+                        avatar.textContent = member.initials || 
+                            (member.username ? member.username.charAt(0).toUpperCase() : '?');
+                        avatar.classList.add('avatar-initials');
+                    };
+                    avatar.appendChild(img);
+                } else {
+                    avatar.textContent = member.initials || 
+                        (member.username ? member.username.charAt(0).toUpperCase() : 
+                         (member.fullName ? member.fullName.charAt(0).toUpperCase() : '?'));
+                    avatar.classList.add('avatar-initials');
+                }
                 
                 var memberInfo = document.createElement('div');
                 memberInfo.className = 'member-info';
@@ -308,6 +292,14 @@
                     memberInfo.appendChild(username);
                 }
                 
+                // Click handler for the entire item
+                memberItem.addEventListener('click', function(e) {
+                    if (e.target.type !== 'checkbox') {
+                        checkbox.checked = !checkbox.checked;
+                        toggleMemberSelection(member.id);
+                    }
+                });
+                
                 memberContent.appendChild(checkbox);
                 memberContent.appendChild(avatar);
                 memberContent.appendChild(memberInfo);
@@ -317,9 +309,83 @@
             });
         }
         
+        function toggleMemberSelection(memberId) {
+            var index = selectedMembers.indexOf(memberId);
+            var memberItem = document.querySelector('[data-member-id="' + memberId + '"]');
+            
+            if (index > -1) {
+                selectedMembers.splice(index, 1);
+                memberItem.classList.remove('selected');
+            } else {
+                selectedMembers.push(memberId);
+                memberItem.classList.add('selected');
+            }
+            
+            updateSelectedCount();
+        }
+        
+        function updateSelectedCount() {
+            var selectedCountEl = document.getElementById('selected-count');
+            var createButton = document.getElementById('create-approval-button');
+            
+            if (selectedMembers.length > 0) {
+                selectedCountEl.textContent = selectedMembers.length + ' member' + 
+                    (selectedMembers.length !== 1 ? 's' : '') + ' selected';
+                createButton.disabled = false;
+            } else {
+                selectedCountEl.textContent = 'No members selected';
+                createButton.disabled = true;
+            }
+        }
+        
+        function createApprovals() {
+            console.log('Creating approvals for members:', selectedMembers);
+            
+            // Create approval data structure
+            var approvalData = {
+                members: {},
+                createdAt: new Date().toISOString(),
+                createdBy: null
+            };
+            
+            // Initialize all selected members with pending status
+            selectedMembers.forEach(function(memberId) {
+                var member = allMembers.find(function(m) { return m.id === memberId; });
+                approvalData.members[memberId] = {
+                    id: memberId,
+                    fullName: member.fullName,
+                    username: member.username,
+                    avatarUrl: member.avatar || member.avatarUrl,
+                    status: 'pending',
+                    actionDate: null
+                };
+            });
+            
+            // Get current member info
+            t.member('all')
+            .then(function(currentMember) {
+                approvalData.createdBy = currentMember.id;
+                
+                // Save approval data to card
+                return t.set('card', 'shared', 'approvals', approvalData);
+            })
+            .then(function() {
+                console.log('Approvals created successfully');
+                t.closePopup();
+            })
+            .catch(function(error) {
+                console.error('Error creating approvals:', error);
+                alert('Failed to create approvals. Please try again.');
+            });
+        }
+        
         // Event listeners
         document.getElementById('retry-btn').addEventListener('click', function() {
             loadBoardMembers();
+        });
+        
+        document.getElementById('create-approval-button').addEventListener('click', function() {
+            createApprovals();
         });
         
         // Load members when popup opens
