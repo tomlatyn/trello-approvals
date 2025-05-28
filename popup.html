@@ -49,24 +49,55 @@
         function loadWorkspaceMembers() {
             showLoading();
             
-            // Get organization (workspace) information
-            t.organization('all')
+            // First, let's check what we can access
+            console.log('Starting to load workspace members...');
+            
+            // Get board information first
+            t.board('all')
+            .then(function(board) {
+                console.log('Board info:', board);
+                
+                // Check if board has an organization
+                if (!board.idOrganization) {
+                    throw new Error('This board is not part of a workspace. Please try on a workspace board.');
+                }
+                
+                // Get organization (workspace) information
+                return t.organization('all');
+            })
             .then(function(org) {
+                console.log('Organization info:', org);
+                
                 if (!org || !org.id) {
-                    throw new Error('No workspace found');
+                    throw new Error('Unable to access workspace information');
                 }
                 
                 // Get workspace members using Trello API
+                console.log('Fetching members for organization:', org.id);
                 return t.rest('GET', 'organizations/' + org.id + '/members', {
                     fields: 'fullName,username,avatarUrl,initials,memberType'
                 });
             })
             .then(function(members) {
+                console.log('Members loaded:', members);
                 displayMembers(members);
                 showContent();
             })
             .catch(function(error) {
                 console.error('Error loading members:', error);
+                
+                // Show more specific error message
+                var errorDiv = document.getElementById('error');
+                var errorMsg = errorDiv.querySelector('p');
+                
+                if (error.message.includes('workspace board')) {
+                    errorMsg.textContent = 'This board is not part of a workspace. Please try on a workspace/team board.';
+                } else if (error.message.includes('access')) {
+                    errorMsg.textContent = 'Unable to access workspace data. Check Power-Up permissions.';
+                } else {
+                    errorMsg.textContent = 'Unable to load workspace members: ' + error.message;
+                }
+                
                 showError();
             });
         }
