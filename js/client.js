@@ -1,13 +1,30 @@
 TrelloPowerUp.initialize({
-  'card-buttons': function(t, opts) {
+  'card-detail-badges': function(t, opts) {
     return [{
-      icon: 'https://cdn.glitch.com/1b42d7fe-bda8-4af8-a6c8-eff0cea9e08a%2Frocket-ship.png?1494946700421',
-      text: 'My Button',
+      title: 'Workspace Members',
+      text: 'View Members',
+      color: 'blue',
       callback: function(t) {
         return t.popup({
-          title: 'Hello World!',
+          title: 'Workspace Members',
           url: './popup.html',
-          height: 200
+          height: 400,
+          width: 350
+        });
+      }
+    }];
+  },
+  
+  'card-buttons': function(t, opts) {
+    return [{
+      icon: 'https://cdn-icons-png.flaticon.com/512/681/681494.png',
+      text: 'Show Members',
+      callback: function(t) {
+        return t.popup({
+          title: 'Workspace Members',
+          url: './popup.html',
+          height: 400,
+          width: 350
         });
       }
     }];
