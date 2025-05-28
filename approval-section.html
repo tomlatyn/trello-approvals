@@ -163,6 +163,12 @@
             font-style: italic;
         }
         
+        .loading {
+            text-align: center;
+            padding: 24px;
+            color: #6b778c;
+        }
+        
         .error {
             text-align: center;
             padding: 24px;
@@ -173,7 +179,11 @@
     </style>
 </head>
 <body>
-    <div id="approval-section" class="approval-section">
+    <div id="loading" class="loading">
+        Loading approval status...
+    </div>
+    
+    <div id="approval-section" class="approval-section" style="display: none;">
         <div class="approval-header">
             <div class="approval-title">Approvals</div>
             <div class="approval-summary" id="approval-summary"></div>
@@ -191,86 +201,86 @@
     
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
     <script>
-        console.log('Approval section starting with URL approach');
-        
         var t = TrelloPowerUp.iframe();
         var currentUserId = null;
-        var membersData = {};
-        
-        function getUrlParams() {
-            var params = new URLSearchParams(window.location.search);
-            return {
-                currentUserId: params.get('currentUserId'),
-                totalCount: parseInt(params.get('totalCount')),
-                approvedCount: parseInt(params.get('approvedCount')),
-                rejectedCount: parseInt(params.get('rejectedCount')),
-                pendingCount: parseInt(params.get('pendingCount')),
-                membersData: params.get('membersData')
-            };
+        var approvalData = null;
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('approval-section').style.display = 'none';
+            document.getElementById('no-approvals').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
         }
         
         function showApprovals() {
+            document.getElementById('loading').style.display = 'none';
             document.getElementById('approval-section').style.display = 'block';
             document.getElementById('no-approvals').style.display = 'none';
             document.getElementById('error').style.display = 'none';
         }
         
         function showNoApprovals() {
+            document.getElementById('loading').style.display = 'none';
             document.getElementById('approval-section').style.display = 'none';
             document.getElementById('no-approvals').style.display = 'block';
             document.getElementById('error').style.display = 'none';
         }
         
         function showError() {
+            document.getElementById('loading').style.display = 'none';
             document.getElementById('approval-section').style.display = 'none';
             document.getElementById('no-approvals').style.display = 'none';
             document.getElementById('error').style.display = 'block';
         }
         
         function loadApprovals() {
-            console.log('Loading approvals from URL params');
+            showLoading();
             
-            var params = getUrlParams();
-            console.log('URL params:', params);
-            
-            if (!params.membersData) {
-                console.log('No members data in URL params');
-                showNoApprovals();
-                return;
-            }
-            
-            try {
-                membersData = JSON.parse(params.membersData);
-                currentUserId = params.currentUserId;
+            // Use the same pattern that works in your popup
+            Promise.all([
+                t.get('card', 'shared', 'approvals', null),
+                t.member('all')
+            ])
+            .then(function(results) {
+                approvalData = results[0];
+                currentUserId = results[1].id;
                 
-                console.log('Parsed members data:', membersData);
+                console.log('Approval data:', approvalData);
                 console.log('Current user ID:', currentUserId);
                 
-                displayApprovals(params);
-                showApprovals();
-                
-            } catch (error) {
-                console.error('Error parsing members data:', error);
+                if (!approvalData || !approvalData.members) {
+                    showNoApprovals();
+                } else {
+                    displayApprovals();
+                    showApprovals();
+                }
+            })
+            .catch(function(error) {
+                console.error('Error loading approvals:', error);
                 showError();
-            }
+            });
         }
         
-        function displayApprovals(params) {
+        function displayApprovals() {
             var approvalsList = document.getElementById('approvals-list');
             var summaryDiv = document.getElementById('approval-summary');
             
             approvalsList.innerHTML = '';
             
-            // Update summary
-            summaryDiv.textContent = params.approvedCount + '/' + params.totalCount + ' approved';
-            if (params.rejectedCount > 0) {
-                summaryDiv.textContent += ', ' + params.rejectedCount + ' rejected';
-            }
-            if (params.pendingCount > 0) {
-                summaryDiv.textContent += ', ' + params.pendingCount + ' pending';
-            }
+            var members = Object.values(approvalData.members);
+            var totalCount = members.length;
+            var approvedCount = members.filter(m => m.status === 'approved').length;
+            var rejectedCount = members.filter(m => m.status === 'rejected').length;
+            var pendingCount = members.filter(m => m.status === 'pending').length;
             
-            var members = Object.values(membersData);
+            // Update summary
+            summaryDiv.textContent = approvedCount + '/' + totalCount + ' approved';
+            if (rejectedCount > 0) {
+                summaryDiv.textContent += ', ' + rejectedCount + ' rejected';
+            }
+            if (pendingCount > 0) {
+                summaryDiv.textContent += ', ' + pendingCount + ' pending';
+            }
             
             // Sort members by status (pending first, then approved, then rejected)
             members.sort(function(a, b) {
@@ -282,7 +292,7 @@
                 var memberDiv = document.createElement('div');
                 memberDiv.className = 'approval-member';
                 
-                // Allow current user to change their own status
+                // Allow current user to change their own status (always)
                 var canAction = (member.id === currentUserId);
                 if (canAction) {
                     memberDiv.classList.add('current-user');
@@ -395,122 +405,30 @@
         }
         
         function updateApprovalStatus(memberId, status) {
-            console.log('Updating approval status:', memberId, 'to', status);
-            
-            if (!membersData[memberId]) {
-                console.error('Invalid member ID');
+            // Use the EXACT same pattern that works in your popup
+            if (!approvalData || !approvalData.members[memberId]) {
+                console.error('Invalid approval data or member ID');
                 return;
             }
             
-            // Update local data immediately for UI feedback
-            var oldStatus = membersData[memberId].status;
-            membersData[memberId].status = status;
-            membersData[memberId].actionDate = new Date().toISOString();
+            // Update the member's status
+            approvalData.members[memberId].status = status;
+            approvalData.members[memberId].actionDate = new Date().toISOString();
             
-            // Update UI immediately
-            var params = {
-                totalCount: Object.keys(membersData).length,
-                approvedCount: Object.values(membersData).filter(m => m.status === 'approved').length,
-                rejectedCount: Object.values(membersData).filter(m => m.status === 'rejected').length,
-                pendingCount: Object.values(membersData).filter(m => m.status === 'pending').length
-            };
-            displayApprovals(params);
-            
-            // Try to communicate with parent window to save data
-            try {
-                console.log('Attempting to communicate with parent window...');
-                
-                // Use postMessage to communicate with parent
-                var messageData = {
-                    type: 'UPDATE_APPROVAL_STATUS',
-                    memberId: memberId,
-                    status: status,
-                    timestamp: new Date().toISOString(),
-                    allMembersData: membersData
-                };
-                
-                console.log('Sending message to parent:', messageData);
-                window.parent.postMessage(messageData, '*');
-                
-                // Also try direct t.set() as backup
-                console.log('Trying direct t.set() as backup...');
-                var approvalData = {
-                    members: membersData,
-                    createdAt: new Date().toISOString(),
-                    createdBy: null
-                };
-                
-                // Shortened timeout for direct approach
-                var saveTimeout = setTimeout(function() {
-                    console.log('Direct save timed out, relying on parent communication');
-                }, 3000);
-                
-                t.set('card', 'shared', 'approvals', approvalData)
-                .then(function() {
-                    clearTimeout(saveTimeout);
-                    console.log('Direct save successful!');
-                })
-                .catch(function(error) {
-                    clearTimeout(saveTimeout);
-                    console.log('Direct save failed, relying on parent communication:', error.message);
-                });
-                
-            } catch (error) {
-                console.error('Error in updateApprovalStatus:', error);
-                
-                // Revert local data on failure
-                membersData[memberId].status = oldStatus;
-                membersData[memberId].actionDate = null;
-                
-                // Revert UI
-                var revertParams = {
-                    totalCount: Object.keys(membersData).length,
-                    approvedCount: Object.values(membersData).filter(m => m.status === 'approved').length,
-                    rejectedCount: Object.values(membersData).filter(m => m.status === 'rejected').length,
-                    pendingCount: Object.values(membersData).filter(m => m.status === 'pending').length
-                };
-                displayApprovals(revertParams);
-                
+            // Save updated data - same as your working popup
+            t.set('card', 'shared', 'approvals', approvalData)
+            .then(function() {
+                console.log('Approval status updated successfully');
+                // Refresh the display
+                displayApprovals();
+            })
+            .catch(function(error) {
+                console.error('Error updating approval status:', error);
                 alert('Failed to update approval status. Please try again.');
-            }
+            });
         }
         
-        // Listen for messages from parent window
-        window.addEventListener('message', function(event) {
-            console.log('Received message from parent:', event.data);
-            
-            if (event.data && event.data.type === 'APPROVAL_SAVE_RESULT') {
-                if (event.data.success) {
-                    console.log('Parent confirmed save was successful');
-                } else {
-                    console.error('Parent reported save failed:', event.data.error);
-                    alert('Failed to save approval status: ' + event.data.error);
-                }
-            }
-        });
-
-        // Listen for messages from the iframe's parent (for parent context handling updates)
-        window.addEventListener('message', function(event) {
-          const data = event.data;
-          if (data && data.type === 'UPDATE_APPROVAL_STATUS') {
-            console.log('Received approval status update from iframe:', data);
-
-            t.set('card', 'shared', 'approvals', {
-              members: data.allMembersData,
-              updatedAt: new Date().toISOString()
-            })
-            .then(() => {
-              console.log('Approval data saved via parent context');
-              event.source.postMessage({ type: 'APPROVAL_SAVE_RESULT', success: true }, event.origin);
-            })
-            .catch((err) => {
-              console.error('Failed to save approval data in parent:', err);
-              event.source.postMessage({ type: 'APPROVAL_SAVE_RESULT', success: false, error: err.message }, event.origin);
-            });
-          }
-        });
-        
-        // Load approvals from URL params
+        // Load approvals when section opens
         loadApprovals();
     </script>
 </body>
