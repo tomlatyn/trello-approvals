@@ -402,41 +402,71 @@
                 return;
             }
             
-            // Update local data
+            // Update local data immediately for UI feedback
+            var oldStatus = membersData[memberId].status;
             membersData[memberId].status = status;
             membersData[memberId].actionDate = new Date().toISOString();
             
-            // Create full approval data structure
+            // Update UI immediately
+            var params = {
+                totalCount: Object.keys(membersData).length,
+                approvedCount: Object.values(membersData).filter(m => m.status === 'approved').length,
+                rejectedCount: Object.values(membersData).filter(m => m.status === 'rejected').length,
+                pendingCount: Object.values(membersData).filter(m => m.status === 'pending').length
+            };
+            displayApprovals(params);
+            
+            // Create full approval data structure - need to preserve original metadata
             var approvalData = {
                 members: membersData,
-                createdAt: new Date().toISOString(), // This should be preserved from original
-                createdBy: null // This should be preserved from original
+                createdAt: new Date().toISOString(), // This might need to be preserved
+                createdBy: null // This might need to be preserved
             };
             
-            // Save updated data
-            t.set('card', 'shared', 'approvals', approvalData)
+            console.log('Saving approval data:', approvalData);
+            
+            // Try multiple approaches to save data
+            var savePromise = new Promise(function(resolve, reject) {
+                var timeout = setTimeout(function() {
+                    reject(new Error('Save timeout after 8 seconds'));
+                }, 8000);
+                
+                t.set('card', 'shared', 'approvals', approvalData)
+                .then(function(result) {
+                    clearTimeout(timeout);
+                    console.log('Save successful:', result);
+                    resolve(result);
+                })
+                .catch(function(error) {
+                    clearTimeout(timeout);
+                    console.error('Save failed:', error);
+                    reject(error);
+                });
+            });
+            
+            savePromise
             .then(function() {
                 console.log('Approval status updated successfully');
-                
-                // Recalculate summary
-                var members = Object.values(membersData);
-                var totalCount = members.length;
-                var approvedCount = members.filter(m => m.status === 'approved').length;
-                var rejectedCount = members.filter(m => m.status === 'rejected').length;
-                var pendingCount = members.filter(m => m.status === 'pending').length;
-                
-                var params = {
-                    totalCount: totalCount,
-                    approvedCount: approvedCount,
-                    rejectedCount: rejectedCount,
-                    pendingCount: pendingCount
-                };
-                
-                displayApprovals(params);
+                // Optionally reload the whole card to refresh all Power-Up instances
+                // t.closePopup(); // This would close if it was a popup
             })
             .catch(function(error) {
                 console.error('Error updating approval status:', error);
-                alert('Failed to update approval status. Please try again.');
+                
+                // Revert local data on failure
+                membersData[memberId].status = oldStatus;
+                membersData[memberId].actionDate = null;
+                
+                // Revert UI
+                var revertParams = {
+                    totalCount: Object.keys(membersData).length,
+                    approvedCount: Object.values(membersData).filter(m => m.status === 'approved').length,
+                    rejectedCount: Object.values(membersData).filter(m => m.status === 'rejected').length,
+                    pendingCount: Object.values(membersData).filter(m => m.status === 'pending').length
+                };
+                displayApprovals(revertParams);
+                
+                alert('Failed to update approval status: ' + error.message + '. Please try refreshing the card.');
             });
         }
         
