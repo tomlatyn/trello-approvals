@@ -163,12 +163,6 @@
             font-style: italic;
         }
         
-        .loading {
-            text-align: center;
-            padding: 24px;
-            color: #6b778c;
-        }
-        
         .error {
             text-align: center;
             padding: 24px;
@@ -179,11 +173,7 @@
     </style>
 </head>
 <body>
-    <div id="loading" class="loading">
-        Loading approval status...
-    </div>
-    
-    <div id="approval-section" class="approval-section" style="display: none;">
+    <div id="approval-section" class="approval-section">
         <div class="approval-header">
             <div class="approval-title">Approvals</div>
             <div class="approval-summary" id="approval-summary"></div>
@@ -196,159 +186,91 @@
     </div>
     
     <div id="error" class="error" style="display: none;">
-        Unable to load approval status. Please refresh the page.
+        Unable to load approval status.
     </div>
     
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
     <script>
-        console.log('Approval section script starting...');
+        console.log('Approval section starting with URL approach');
         
-        // Try to get the Trello context
-        var t;
-        try {
-            t = window.TrelloPowerUp.iframe();
-            console.log('TrelloPowerUp context initialized');
-        } catch (error) {
-            console.error('Failed to initialize TrelloPowerUp:', error);
-            showError();
-            return;
-        }
-        
+        var t = TrelloPowerUp.iframe();
         var currentUserId = null;
-        var approvalData = null;
-        var loadingAttempts = 0;
-        var maxAttempts = 3;
-
-        function showLoading() {
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('approval-section').style.display = 'none';
-            document.getElementById('no-approvals').style.display = 'none';
-            document.getElementById('error').style.display = 'none';
+        var membersData = {};
+        
+        function getUrlParams() {
+            var params = new URLSearchParams(window.location.search);
+            return {
+                currentUserId: params.get('currentUserId'),
+                totalCount: parseInt(params.get('totalCount')),
+                approvedCount: parseInt(params.get('approvedCount')),
+                rejectedCount: parseInt(params.get('rejectedCount')),
+                pendingCount: parseInt(params.get('pendingCount')),
+                membersData: params.get('membersData')
+            };
         }
         
         function showApprovals() {
-            document.getElementById('loading').style.display = 'none';
             document.getElementById('approval-section').style.display = 'block';
             document.getElementById('no-approvals').style.display = 'none';
             document.getElementById('error').style.display = 'none';
         }
         
         function showNoApprovals() {
-            document.getElementById('loading').style.display = 'none';
             document.getElementById('approval-section').style.display = 'none';
             document.getElementById('no-approvals').style.display = 'block';
             document.getElementById('error').style.display = 'none';
         }
         
         function showError() {
-            document.getElementById('loading').style.display = 'none';
             document.getElementById('approval-section').style.display = 'none';
             document.getElementById('no-approvals').style.display = 'none';
             document.getElementById('error').style.display = 'block';
         }
         
         function loadApprovals() {
-            console.log('Loading approvals, attempt:', loadingAttempts + 1);
-            loadingAttempts++;
-            showLoading();
+            console.log('Loading approvals from URL params');
             
-            // Set a timeout for each individual call
-            var approvalDataPromise = new Promise(function(resolve, reject) {
-                var timeout = setTimeout(function() {
-                    reject(new Error('Timeout getting approval data'));
-                }, 5000);
-                
-                t.get('card', 'shared', 'approvals', null)
-                .then(function(data) {
-                    clearTimeout(timeout);
-                    resolve(data);
-                })
-                .catch(function(error) {
-                    clearTimeout(timeout);
-                    reject(error);
-                });
-            });
+            var params = getUrlParams();
+            console.log('URL params:', params);
             
-            var memberPromise = new Promise(function(resolve, reject) {
-                var timeout = setTimeout(function() {
-                    reject(new Error('Timeout getting member data'));
-                }, 5000);
-                
-                t.member('all')
-                .then(function(member) {
-                    clearTimeout(timeout);
-                    resolve(member);
-                })
-                .catch(function(error) {
-                    clearTimeout(timeout);
-                    reject(error);
-                });
-            });
+            if (!params.membersData) {
+                console.log('No members data in URL params');
+                showNoApprovals();
+                return;
+            }
             
-            // Load approval data first
-            approvalDataPromise
-            .then(function(data) {
-                console.log('Approval data loaded:', data);
-                approvalData = data;
+            try {
+                membersData = JSON.parse(params.membersData);
+                currentUserId = params.currentUserId;
                 
-                if (!approvalData || !approvalData.members) {
-                    console.log('No approval data found');
-                    showNoApprovals();
-                    return;
-                }
+                console.log('Parsed members data:', membersData);
+                console.log('Current user ID:', currentUserId);
                 
-                // Now try to get current member with timeout
-                return memberPromise;
-            })
-            .then(function(member) {
-                console.log('Current member loaded:', member);
-                currentUserId = member ? member.id : null;
-                
-                console.log('Displaying approvals');
-                displayApprovals();
+                displayApprovals(params);
                 showApprovals();
-            })
-            .catch(function(error) {
-                console.error('Error loading approvals:', error);
                 
-                // If we have approval data but failed to get member, show without actions
-                if (approvalData && approvalData.members) {
-                    console.log('Showing approvals without current user actions');
-                    currentUserId = null;
-                    displayApprovals();
-                    showApprovals();
-                } else if (loadingAttempts < maxAttempts) {
-                    console.log('Retrying in 2 seconds...');
-                    setTimeout(loadApprovals, 2000);
-                } else {
-                    console.log('Max attempts reached, showing error');
-                    showError();
-                }
-            });
+            } catch (error) {
+                console.error('Error parsing members data:', error);
+                showError();
+            }
         }
         
-        function displayApprovals() {
-            console.log('Displaying approvals for', Object.keys(approvalData.members).length, 'members');
-            
+        function displayApprovals(params) {
             var approvalsList = document.getElementById('approvals-list');
             var summaryDiv = document.getElementById('approval-summary');
             
             approvalsList.innerHTML = '';
             
-            var members = Object.values(approvalData.members);
-            var totalCount = members.length;
-            var approvedCount = members.filter(m => m.status === 'approved').length;
-            var rejectedCount = members.filter(m => m.status === 'rejected').length;
-            var pendingCount = members.filter(m => m.status === 'pending').length;
-            
             // Update summary
-            summaryDiv.textContent = approvedCount + '/' + totalCount + ' approved';
-            if (rejectedCount > 0) {
-                summaryDiv.textContent += ', ' + rejectedCount + ' rejected';
+            summaryDiv.textContent = params.approvedCount + '/' + params.totalCount + ' approved';
+            if (params.rejectedCount > 0) {
+                summaryDiv.textContent += ', ' + params.rejectedCount + ' rejected';
             }
-            if (pendingCount > 0) {
-                summaryDiv.textContent += ', ' + pendingCount + ' pending';
+            if (params.pendingCount > 0) {
+                summaryDiv.textContent += ', ' + params.pendingCount + ' pending';
             }
+            
+            var members = Object.values(membersData);
             
             // Sort members by status (pending first, then approved, then rejected)
             members.sort(function(a, b) {
@@ -360,8 +282,8 @@
                 var memberDiv = document.createElement('div');
                 memberDiv.className = 'approval-member';
                 
-                // Allow current user to change their own status (if we know who they are)
-                var canAction = currentUserId && (member.id === currentUserId);
+                // Allow current user to change their own status
+                var canAction = (member.id === currentUserId);
                 if (canAction) {
                     memberDiv.classList.add('current-user');
                 }
@@ -374,7 +296,6 @@
                     img.src = member.avatarUrl;
                     img.alt = member.fullName || member.username;
                     img.onerror = function() {
-                        // Fallback to initials if image fails
                         avatar.innerHTML = '';
                         avatar.textContent = getInitials(member);
                     };
@@ -476,38 +397,51 @@
         function updateApprovalStatus(memberId, status) {
             console.log('Updating approval status:', memberId, 'to', status);
             
-            if (!approvalData || !approvalData.members[memberId]) {
-                console.error('Invalid approval data or member ID');
+            if (!membersData[memberId]) {
+                console.error('Invalid member ID');
                 return;
             }
             
-            // Update the member's status
-            approvalData.members[memberId].status = status;
-            approvalData.members[memberId].actionDate = new Date().toISOString();
+            // Update local data
+            membersData[memberId].status = status;
+            membersData[memberId].actionDate = new Date().toISOString();
             
-            // Save updated data with timeout
-            var saveTimeout = setTimeout(function() {
-                console.error('Save timeout');
-                alert('Save timeout. Please try again.');
-            }, 10000);
+            // Create full approval data structure
+            var approvalData = {
+                members: membersData,
+                createdAt: new Date().toISOString(), // This should be preserved from original
+                createdBy: null // This should be preserved from original
+            };
             
+            // Save updated data
             t.set('card', 'shared', 'approvals', approvalData)
             .then(function() {
-                clearTimeout(saveTimeout);
                 console.log('Approval status updated successfully');
-                displayApprovals();
+                
+                // Recalculate summary
+                var members = Object.values(membersData);
+                var totalCount = members.length;
+                var approvedCount = members.filter(m => m.status === 'approved').length;
+                var rejectedCount = members.filter(m => m.status === 'rejected').length;
+                var pendingCount = members.filter(m => m.status === 'pending').length;
+                
+                var params = {
+                    totalCount: totalCount,
+                    approvedCount: approvedCount,
+                    rejectedCount: rejectedCount,
+                    pendingCount: pendingCount
+                };
+                
+                displayApprovals(params);
             })
             .catch(function(error) {
-                clearTimeout(saveTimeout);
                 console.error('Error updating approval status:', error);
                 alert('Failed to update approval status. Please try again.');
             });
         }
         
-        // Start loading with a small delay to ensure DOM is ready
-        setTimeout(function() {
-            loadApprovals();
-        }, 100);
+        // Load approvals from URL params
+        loadApprovals();
     </script>
 </body>
 </html>
