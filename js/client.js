@@ -1,10 +1,10 @@
 TrelloPowerUp.initialize({
-  // Card back section - shows approval table directly in card detail
-  'card-back-section': function(t, opts) {
+  // Card detail badges - shows approval table embedded in card detail
+  'card-detail-badges': function(t, opts) {
     return t.get('card', 'shared', 'approvals', null)
     .then(function(approvalData) {
       if (!approvalData || !approvalData.members) {
-        return null;
+        return [];
       }
       
       // Get current member info
@@ -25,15 +25,14 @@ TrelloPowerUp.initialize({
           membersData: JSON.stringify(approvalData.members)
         });
         
-        return {
+        return [{
           title: 'Approvals',
-          icon: 'https://cdn-icons-png.flaticon.com/512/3024/3024593.png',
-          content: {
-            type: 'iframe',
-            url: './approval-section.html?' + params.toString(),
-            height: 350
-          }
-        };
+          text: approvedCount + '/' + totalCount + ' approved',
+          color: 'blue',
+          // Remove callback to make it show inline instead of popup
+          url: './approval-section.html?' + params.toString(),
+          height: 350
+        }];
       });
     });
   },
