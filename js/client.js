@@ -17,12 +17,14 @@ TrelloPowerUp.initialize({
           height: 350
         }
       }];
+    })
+    .catch(function(error) {
+      console.error('Error in attachment-sections:', error);
+      return [];
     });
   },
   
-  // No card detail badges needed
-  
-  // Card buttons - always shows "Approvals" button in sidebar
+  // Rest of your code remains the same...
   'card-buttons': function(t, opts) {
     return [{
       icon: 'https://cdn-icons-png.flaticon.com/512/3024/3024593.png',
@@ -38,7 +40,6 @@ TrelloPowerUp.initialize({
     }];
   },
   
-  // Card badges - shows status on board view
   'card-badges': function(t, opts) {
     return t.get('card', 'shared', 'approvals', null)
     .then(function(approvalData) {
@@ -51,17 +52,16 @@ TrelloPowerUp.initialize({
       var approvedCount = members.filter(m => m.status === 'approved').length;
       var rejectedCount = members.filter(m => m.status === 'rejected').length;
       
-      // Determine overall status and color
       var badgeColor, badgeText;
       
       if (rejectedCount > 0) {
-        badgeColor = '#de350b'; // Red
+        badgeColor = '#de350b';
         badgeText = 'REJECTED';
       } else if (approvedCount === totalCount) {
-        badgeColor = '#00875a'; // Green
+        badgeColor = '#00875a';
         badgeText = 'APPROVED';
       } else {
-        badgeColor = '#ff9f1a'; // Orange/Yellow
+        badgeColor = '#ff9f1a';
         badgeText = 'PENDING';
       }
       
@@ -69,29 +69,10 @@ TrelloPowerUp.initialize({
         text: badgeText,
         color: badgeColor
       }];
+    })
+    .catch(function(error) {
+      console.error('Error in card-badges:', error);
+      return [];
     });
   },
-  
-  // Remove attachment sections for now
-  /*
-  'attachment-sections': function(t, opts) {
-    return t.get('card', 'shared', 'approvals', null)
-    .then(function(approvalData) {
-      if (!approvalData || !approvalData.members) {
-        return [];
-      }
-      
-      return [{
-        id: 'approvals',
-        claimed: [],
-        title: 'Approvals',
-        content: {
-          type: 'iframe',
-          url: './approval-section.html',
-          height: 350
-        }
-      }];
-    });
-  }
-  */
 });

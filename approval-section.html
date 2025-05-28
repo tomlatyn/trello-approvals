@@ -236,21 +236,24 @@
         function loadApprovals() {
             showLoading();
             
-            // Use the same pattern that works in your popup
-            Promise.all([
-                t.get('card', 'shared', 'approvals', null),
-                t.member('all')
-            ])
-            .then(function(results) {
-                approvalData = results[0];
-                currentUserId = results[1].id;
-                
-                console.log('Approval data:', approvalData);
+            // Get current member first, then approval data
+            t.member('all')
+            .then(function(currentMember) {
+                currentUserId = currentMember.id;
                 console.log('Current user ID:', currentUserId);
                 
-                if (!approvalData || !approvalData.members) {
+                // Now get approval data using the same pattern as your working popup
+                return t.get('card', 'shared', 'approvals');
+            })
+            .then(function(data) {
+                approvalData = data;
+                console.log('Approval data loaded:', approvalData);
+                
+                if (!approvalData || !approvalData.members || Object.keys(approvalData.members).length === 0) {
+                    console.log('No approval data found');
                     showNoApprovals();
                 } else {
+                    console.log('Displaying approvals for', Object.keys(approvalData.members).length, 'members');
                     displayApprovals();
                     showApprovals();
                 }
@@ -405,9 +408,11 @@
         }
         
         function updateApprovalStatus(memberId, status) {
-            // Use the EXACT same pattern that works in your popup
-            if (!approvalData || !approvalData.members[memberId]) {
-                console.error('Invalid approval data or member ID');
+            console.log('Updating approval status for member:', memberId, 'to:', status);
+            
+            if (!approvalData || !approvalData.members || !approvalData.members[memberId]) {
+                console.error('Invalid approval data or member ID:', memberId);
+                console.log('Current approval data:', approvalData);
                 return;
             }
             
@@ -415,16 +420,24 @@
             approvalData.members[memberId].status = status;
             approvalData.members[memberId].actionDate = new Date().toISOString();
             
-            // Save updated data - same as your working popup
+            console.log('Updated approval data:', approvalData);
+            
+            // Save updated data using the same pattern as your working popup
             t.set('card', 'shared', 'approvals', approvalData)
             .then(function() {
                 console.log('Approval status updated successfully');
                 // Refresh the display
                 displayApprovals();
+                
+                // Optional: Trigger a refresh of the card badges
+                return t.sizeTo('#approval-section');
             })
             .catch(function(error) {
                 console.error('Error updating approval status:', error);
                 alert('Failed to update approval status. Please try again.');
+                
+                // Reload the approvals to reset the display
+                loadApprovals();
             });
         }
         
