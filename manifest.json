@@ -1,0 +1,22 @@
+{
+  "name": "Workspace Members",
+  "details": "View all members of your Trello workspace/team",
+  "author": "Tomáš Latýn",
+  "capabilities": [
+    "card-detail-badges",
+    "card-buttons"
+  ],
+  "connectors": {
+    "iframe": {
+      "url": "./index.html"
+    }
+  },
+  "icon": {
+    "url": "https://cdn-icons-png.flaticon.com/512/681/681494.png"
+  },
+  "tags": [
+    "productivity",
+    "members",
+    "workspace"
+  ]
+}

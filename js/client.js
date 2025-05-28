@@ -29,4 +29,9 @@ TrelloPowerUp.initialize({
       }
     }];
   }
+}, {
+  appKey: '3aee4001eb85c9f42f6f28d98bf841ca',
+  appName: 'Workspace Members Power-Up',
+  // Request necessary permissions
+  scopes: ['read', 'write']
 });
