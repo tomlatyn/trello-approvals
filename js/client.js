@@ -1,24 +1,22 @@
 TrelloPowerUp.initialize({
-  // Card back section - shows approval table directly in card detail
-  'card-back-section': function(t, opts) {
+  // Attachment sections - shows approval table directly in card
+  'attachment-sections': function(t, opts) {
     return t.get('card', 'shared', 'approvals', null)
     .then(function(approvalData) {
       if (!approvalData || !approvalData.members) {
-        return null;
+        return [];
       }
       
-      // Sign the URL as required for card-back-section
-      return t.signUrl('./approval-section.html').then(function(signedUrl) {
-        return {
-          title: 'Approvals',
-          icon: 'https://cdn-icons-png.flaticon.com/512/3024/3024593.png',
-          content: {
-            type: 'iframe',
-            url: signedUrl,
-            height: 350
-          }
-        };
-      });
+      return [{
+        id: 'approvals',
+        claimed: [],
+        title: 'Approvals',
+        content: {
+          type: 'iframe',
+          url: t.signUrl('./approval-section.html'),
+          height: 350
+        }
+      }];
     });
   },
   
