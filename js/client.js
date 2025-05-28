@@ -1,20 +1,29 @@
 TrelloPowerUp.initialize({
-  // Card detail badges - shows approval table embedded in card detail
-  'card-detail-badges': function(t, opts) {
+  // Card back section - shows approval table directly in card detail
+  'card-back-section': function(t, opts) {
+    console.log('card-back-section called');
+    
     return t.get('card', 'shared', 'approvals', null)
     .then(function(approvalData) {
+      console.log('card-back-section approval data:', approvalData);
+      
       if (!approvalData || !approvalData.members) {
-        return [];
+        console.log('No approval data found in card-back-section');
+        return null;
       }
       
-      // Get current member info
+      // Get current member info - same logic as working version
       return t.member('all').then(function(currentMember) {
-        // Pass data to the iframe via URL parameters
+        console.log('card-back-section current member:', currentMember);
+        
+        // Same data passing logic that worked
         var members = Object.values(approvalData.members);
         var totalCount = members.length;
         var approvedCount = members.filter(m => m.status === 'approved').length;
         var rejectedCount = members.filter(m => m.status === 'rejected').length;
         var pendingCount = members.filter(m => m.status === 'pending').length;
+        
+        console.log('card-back-section stats:', {totalCount, approvedCount, rejectedCount, pendingCount});
         
         var params = new URLSearchParams({
           currentUserId: currentMember.id,
@@ -25,15 +34,26 @@ TrelloPowerUp.initialize({
           membersData: JSON.stringify(approvalData.members)
         });
         
-        return [{
+        console.log('card-back-section URL params created');
+        
+        return {
           title: 'Approvals',
-          text: approvedCount + '/' + totalCount + ' approved',
-          color: 'blue',
-          // Remove callback to make it show inline instead of popup
-          url: './approval-section.html?' + params.toString(),
-          height: 350
-        }];
+          icon: 'https://cdn-icons-png.flaticon.com/512/3024/3024593.png',
+          content: {
+            type: 'iframe',
+            url: './approval-section.html?' + params.toString(),
+            height: 350
+          }
+        };
+      })
+      .catch(function(error) {
+        console.error('Error in card-back-section member loading:', error);
+        return null;
       });
+    })
+    .catch(function(error) {
+      console.error('Error in card-back-section approval loading:', error);
+      return null;
     });
   },
   
@@ -88,27 +108,4 @@ TrelloPowerUp.initialize({
       }];
     });
   },
-  
-  // Remove attachment sections for now
-  /*
-  'attachment-sections': function(t, opts) {
-    return t.get('card', 'shared', 'approvals', null)
-    .then(function(approvalData) {
-      if (!approvalData || !approvalData.members) {
-        return [];
-      }
-      
-      return [{
-        id: 'approvals',
-        claimed: [],
-        title: 'Approvals',
-        content: {
-          type: 'iframe',
-          url: './approval-section.html',
-          height: 350
-        }
-      }];
-    });
-  }
-  */
 });
