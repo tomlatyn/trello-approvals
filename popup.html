@@ -27,127 +27,99 @@ function loadWorkspaceMembers() {
     
     console.log('Starting to load workspace members...');
     
-    // Try multiple approaches to get members
-    Promise.all([
-        // Approach 1: Try to get board members first
-        t.board('all').catch(e => ({ error: 'board', message: e.message })),
-        // Approach 2: Try to get organization directly
-        t.organization('all').catch(e => ({ error: 'org', message: e.message }))
-    ])
-    .then(function(results) {
-        var board = results[0];
-        var org = results[1];
+    // First try to get board information
+    t.board('all')
+    .then(function(board) {
+        console.log('Board info:', board);
         
-        console.log('Board result:', board);
-        console.log('Organization result:', org);
-        
-        // Check if we got valid board data
-        if (board && !board.error) {
-            console.log('Board info available:', board);
-            
-            // If board has members, show them
-            if (board.members && board.members.length > 0) {
-                console.log('Using board members');
-                displayMembers(board.members);
-                showContent();
-                return;
-            }
-            
-            // If board has organization, try to get org members
-            if (board.idOrganization) {
-                console.log('Board has organization, trying to get org members');
-                return loadOrganizationMembers(board.idOrganization);
-            }
-        }
-        
-        // Try using organization data if available
-        if (org && !org.error && org.id) {
-            console.log('Using organization data');
-            return loadOrganizationMembers(org.id);
-        }
-        
-        // If neither approach worked, try alternative methods
-        return tryAlternativeApproaches();
-    })
-    .catch(function(error) {
-        console.error('Error in loadWorkspaceMembers:', error);
-        showError('Unable to access workspace data. Make sure this board is part of a workspace and you have proper permissions.');
-    });
-}
-
-function loadOrganizationMembers(orgId) {
-    console.log('Loading members for organization:', orgId);
-    
-    // Try different API endpoints
-    var apiCalls = [
-        // Try the standard members endpoint
-        t.rest('GET', 'organizations/' + orgId + '/members', {
-            fields: 'fullName,username,avatarUrl,initials,memberType'
-        }),
-        // Try the memberships endpoint
-        t.rest('GET', 'organizations/' + orgId + '/memberships', {
-            member: true,
-            member_fields: 'fullName,username,avatarUrl,initials'
-        })
-    ];
-    
-    return Promise.allSettled(apiCalls)
-    .then(function(results) {
-        console.log('API call results:', results);
-        
-        // Try to use the first successful result
-        for (var i = 0; i < results.length; i++) {
-            if (results[i].status === 'fulfilled' && results[i].value) {
-                var members = results[i].value;
-                
-                // Handle memberships format
-                if (members.length > 0 && members[0].member) {
-                    members = members.map(function(membership) {
-                        return membership.member;
-                    });
-                }
-                
+        // Check if we have organization info
+        if (board.idOrganization) {
+            console.log('Board has organization:', board.idOrganization);
+            // Try to get organization info
+            return t.organization('all');
+        } else {
+            console.log('Board is not part of a workspace, showing board members');
+            // Fallback to board members
+            return t.board('members').then(function(members) {
                 if (members && members.length > 0) {
                     displayMembers(members);
                     showContent();
+                    
+                    // Update header to show it's board members
+                    var header = document.querySelector('.header h3');
+                    header.textContent = 'Board Members';
                     return;
+                } else {
+                    throw new Error('No board members found');
                 }
-            }
+            });
         }
+    })
+    .then(function(org) {
+        if (!org) return; // Already handled board members case above
         
-        throw new Error('No members found in API responses');
-    });
-}
-
-function tryAlternativeApproaches() {
-    console.log('Trying alternative approaches...');
-    
-    // Try to get current member info as a fallback
-    return t.member('all')
-    .then(function(currentMember) {
-        console.log('Current member info:', currentMember);
+        console.log('Organization info:', org);
         
-        if (currentMember) {
-            // Show just the current member as a fallback
-            displayMembers([currentMember]);
+        // Try to get organization members using available methods
+        if (org.members) {
+            // If organization object includes members
+            console.log('Found members in organization object');
+            displayMembers(org.members);
             showContent();
-            
-            // Update the header to indicate this is limited data
-            var header = document.querySelector('.header h3');
-            header.textContent = 'Current Member (Limited Access)';
         } else {
-            throw new Error('Unable to access any member information');
+            // Try alternative approach - get board members as fallback
+            console.log('No members in org object, falling back to board members');
+            return t.board('members').then(function(members) {
+                if (members && members.length > 0) {
+                    displayMembers(members);
+                    showContent();
+                    
+                    // Update header to indicate limited scope
+                    var header = document.querySelector('.header h3');
+                    header.textContent = 'Board Members (Limited Access)';
+                } else {
+                    throw new Error('No members found');
+                }
+            });
         }
     })
     .catch(function(error) {
-        console.error('All approaches failed:', error);
-        showError('Unable to load workspace members. This may be due to insufficient permissions or the board not being part of a workspace.');
+        console.error('Error loading members:', error);
+        
+        // Try one more fallback - current member only
+        t.member('all').then(function(currentMember) {
+            if (currentMember) {
+                console.log('Showing current member as fallback');
+                displayMembers([currentMember]);
+                showContent();
+                
+                var header = document.querySelector('.header h3');
+                header.textContent = 'Current Member';
+            } else {
+                throw new Error('No member data available');
+            }
+        }).catch(function(finalError) {
+            console.error('All methods failed:', finalError);
+            
+            var errorMessage = 'Unable to load members. ';
+            if (error.message.includes('workspace')) {
+                errorMessage += 'Make sure this board is part of a workspace/team.';
+            } else if (error.message.includes('permission')) {
+                errorMessage += 'Insufficient permissions to access member data.';
+            } else {
+                errorMessage += 'Please try again or contact support.';
+            }
+            
+            showError(errorMessage);
+        });
     });
 }
 
 function displayMembers(members) {
     var membersList = document.getElementById('members-list');
     var memberCount = document.getElementById('member-count');
+    
+    console.log('Displaying members:', members);
     
     // Update member count
     memberCount.textContent = members.length + ' member' + (members.length !== 1 ? 's' : '');
@@ -170,13 +142,30 @@ function displayMembers(members) {
         var avatar = document.createElement('div');
         avatar.className = 'avatar';
         
-        if (member.avatarUrl) {
+        // Handle different avatar URL formats
+        var avatarUrl = member.avatarUrl;
+        if (avatarUrl) {
+            // Ensure we have the right avatar URL format
+            if (!avatarUrl.includes('/50.png') && !avatarUrl.includes('/170.png')) {
+                avatarUrl = avatarUrl + '/50.png';
+            }
+            
             var img = document.createElement('img');
-            img.src = member.avatarUrl + '/50.png';
-            img.alt = member.fullName || member.username;
+            img.src = avatarUrl;
+            img.alt = member.fullName || member.username || 'Member';
+            img.onerror = function() {
+                // Fallback to initials if image fails to load
+                avatar.innerHTML = '';
+                avatar.textContent = member.initials || 
+                    (member.username ? member.username.charAt(0).toUpperCase() : '?');
+                avatar.classList.add('avatar-initials');
+            };
             avatar.appendChild(img);
         } else {
-            avatar.textContent = member.initials || (member.username ? member.username.charAt(0).toUpperCase() : '?');
+            // Use initials
+            avatar.textContent = member.initials || 
+                (member.username ? member.username.charAt(0).toUpperCase() : 
+                 (member.fullName ? member.fullName.charAt(0).toUpperCase() : '?'));
             avatar.classList.add('avatar-initials');
         }
         
@@ -185,14 +174,14 @@ function displayMembers(members) {
         
         var name = document.createElement('div');
         name.className = 'member-name';
-        name.textContent = member.fullName || member.username || 'Unknown';
-        
-        var username = document.createElement('div');
-        username.className = 'member-username';
-        username.textContent = member.username ? '@' + member.username : '';
+        name.textContent = member.fullName || member.username || 'Unknown Member';
         
         memberInfo.appendChild(name);
+        
         if (member.username) {
+            var username = document.createElement('div');
+            username.className = 'member-username';
+            username.textContent = '@' + member.username;
             memberInfo.appendChild(username);
         }
         
@@ -214,6 +203,31 @@ function displayMembers(members) {
 document.getElementById('retry-btn').addEventListener('click', function() {
     loadWorkspaceMembers();
 });
+
+// Debug function to test what's available
+function debugCapabilities() {
+    console.log('=== Debugging Power-Up Capabilities ===');
+    
+    console.log('Available methods on t:', Object.keys(t));
+    
+    t.board('all').then(board => {
+        console.log('Board data:', board);
+        console.log('Board members available:', !!board.members);
+        console.log('Organization ID:', board.idOrganization);
+    }).catch(e => console.log('Board access error:', e));
+    
+    t.organization('all').then(org => {
+        console.log('Organization data:', org);
+        console.log('Org members available:', !!org.members);
+    }).catch(e => console.log('Organization access error:', e));
+    
+    t.member('all').then(member => {
+        console.log('Current member data:', member);
+    }).catch(e => console.log('Member access error:', e));
+}
+
+// Run debug on load
+debugCapabilities();
 
 // Load members when popup opens
 loadWorkspaceMembers();
