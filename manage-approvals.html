@@ -34,7 +34,6 @@
         
         .member-item.selected {
             background-color: #e4f3ff;
-            border: 1px solid #0079bf;
         }
         
         .member-checkbox {
@@ -44,7 +43,6 @@
             accent-color: #0079bf;
         }
         
-        /* Trello-style avatars */
         .avatar {
             width: 32px;
             height: 32px;
@@ -200,7 +198,6 @@
             display: none !important;
         }
         
-        /* Member count info */
         .member-count {
             font-size: 12px;
             color: #6b778c;
@@ -266,6 +263,111 @@
         function loadData() {
             showLoading();
             
+            // Use placeholder data for testing
+            var usePlaceholder = false; // Set to false when deploying to Trello
+            
+            if (usePlaceholder) {
+                // Placeholder board members
+                allMembers = [
+                    {
+                        id: 'user123',
+                        fullName: 'John Doe',
+                        username: 'johndoe',
+                        avatarUrl: 'https://i.pravatar.cc/150?img=1'
+                    },
+                    {
+                        id: 'user456',
+                        fullName: 'Jane Smith',
+                        username: 'janesmith',
+                        avatarUrl: 'https://i.pravatar.cc/150?img=2'
+                    },
+                    {
+                        id: 'user789',
+                        fullName: 'Mike Johnson',
+                        username: 'mikej',
+                        avatarUrl: null // This will show initials
+                    },
+                    {
+                        id: 'user101',
+                        fullName: 'Sarah Wilson',
+                        username: 'sarahw',
+                        avatarUrl: 'https://i.pravatar.cc/150?img=3'
+                    },
+                    {
+                        id: 'user202',
+                        fullName: 'Tom Brown',
+                        username: 'tombrown',
+                        avatarUrl: 'https://i.pravatar.cc/150?img=4'
+                    },
+                    {
+                        id: 'user303',
+                        fullName: 'Lisa Davis',
+                        username: 'lisad',
+                        avatarUrl: 'https://i.pravatar.cc/150?img=5'
+                    },
+                    {
+                        id: 'user404',
+                        fullName: 'David Lee',
+                        username: 'davidlee',
+                        avatarUrl: null // This will show initials
+                    },
+                    {
+                        id: 'user505',
+                        fullName: 'Emma Taylor',
+                        username: 'emmat',
+                        avatarUrl: 'https://i.pravatar.cc/150?img=6'
+                    }
+                ];
+                
+                // Existing approvals (some members already selected)
+                existingApprovals = {
+                    members: {
+                        'user123': {
+                            id: 'user123',
+                            fullName: 'John Doe',
+                            username: 'johndoe',
+                            avatarUrl: 'https://i.pravatar.cc/150?img=1',
+                            status: 'pending',
+                            actionDate: new Date().toISOString()
+                        },
+                        'user456': {
+                            id: 'user456',
+                            fullName: 'Jane Smith',
+                            username: 'janesmith',
+                            avatarUrl: 'https://i.pravatar.cc/150?img=2',
+                            status: 'approved',
+                            actionDate: new Date().toISOString()
+                        },
+                        'user789': {
+                            id: 'user789',
+                            fullName: 'Mike Johnson',
+                            username: 'mikej',
+                            avatarUrl: null,
+                            status: 'rejected',
+                            actionDate: new Date().toISOString()
+                        }
+                    },
+                    createdAt: new Date().toISOString(),
+                    createdBy: 'user123'
+                };
+                
+                console.log('Using placeholder data');
+                console.log('Board members:', allMembers);
+                console.log('Existing approvals:', existingApprovals);
+                
+                if (existingApprovals && existingApprovals.members) {
+                    // Pre-select existing members
+                    selectedMembers = Object.keys(existingApprovals.members);
+                    document.getElementById('delete-button').classList.remove('hidden');
+                }
+                
+                displayMembers(allMembers);
+                updateSelectedCount();
+                showContent();
+                return;
+            }
+            
+            // Real Trello implementation
             Promise.all([
                 loadBoardMembers(),
                 t.get('card', 'shared', 'approvals', null)
@@ -356,9 +458,7 @@
         
         function displayMembers(members) {
             var membersList = document.getElementById('members-list');
-            var memberCount = document.getElementById('member-count');
             
-            memberCount.textContent = members.length + ' member' + (members.length !== 1 ? 's' : '') + ' available';
             membersList.innerHTML = '';
             
             members.sort(function(a, b) {
@@ -484,6 +584,15 @@
                 return;
             }
             
+            // For placeholder mode, just simulate save
+            var usePlaceholder = false; // Should match the flag in loadData
+            
+            if (usePlaceholder) {
+                console.log('Simulating save in placeholder mode');
+                alert('Save successful! (Placeholder mode)');
+                return;
+            }
+            
             var approvalData = {
                 members: {},
                 createdAt: existingApprovals ? existingApprovals.createdAt : new Date().toISOString(),
@@ -531,6 +640,15 @@
         
         function deleteApprovals() {
             if (!confirm('Are you sure you want to delete all approvals for this card? This action cannot be undone.')) {
+                return;
+            }
+            
+            // For placeholder mode, just simulate delete
+            var usePlaceholder = false; // Should match the flag in loadData
+            
+            if (usePlaceholder) {
+                console.log('Simulating delete in placeholder mode');
+                alert('Delete successful! (Placeholder mode)');
                 return;
             }
             
