@@ -1,4 +1,62 @@
-<!DOCTYPE html>
+/* Action buttons that match Trello buttons */
+        .action-buttons {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.1s ease;
+            flex-shrink: 0;
+        }
+        
+        .approval-member:hover .action-buttons,
+        .approval-member.current-user .action-buttons {
+            opacity: 1;
+        }
+        
+        .action-btn {
+            padding: 3px 6px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 500;
+            transition: all 0.1s ease;
+            background-color: #091e420a;
+            color: #42526e;
+        }
+        
+        .action-btn:hover {
+            background-color: #091e4214;
+            color: #172b4d;
+        }
+        
+        .approve-btn {
+            background-color: #61bd4f;
+            color: white;
+        }
+        
+        .approve-btn:hover {
+            background-color: #5aac44;
+        }
+        
+        .reject-btn {
+            background-color: #eb5a46;
+            color: white;
+        }
+        
+        .reject-btn:hover {
+            background-color: #cf513d;
+        }
+        
+        .reset-btn {
+            background-color: #f4f5f7;
+            color: #6b778c;
+            border: 1px solid #dfe1e6;
+        }
+        
+        .reset-btn:hover {
+            background-color: #e4e5ea;
+            color: #42526e;
+        }<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
@@ -7,8 +65,8 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
-            padding: 16px;
-            background-color: #f4f5f7;
+            padding: 0;
+            background-color: white;
             color: #172b4d;
             font-size: 14px;
             line-height: 1.4;
@@ -19,29 +77,27 @@
         /* Main container */
         .approval-container {
             background-color: white;
-            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         
         /* Header */
         .approval-header {
             background-color: #f8f9fa;
-            padding: 16px 20px;
+            padding: 8px 12px;
             border-bottom: 1px solid #e1e4e8;
             font-weight: 600;
-            font-size: 16px;
+            font-size: 14px;
             color: #24292e;
         }
         
         /* Table header */
         .table-header {
             display: flex;
-            padding: 12px 20px;
+            padding: 8px 12px;
             background-color: #fafbfc;
             border-bottom: 1px solid #e1e4e8;
             font-weight: 500;
-            font-size: 12px;
+            font-size: 11px;
             color: #586069;
             text-transform: uppercase;
         }
@@ -68,7 +124,7 @@
         .approval-member {
             display: flex;
             align-items: center;
-            padding: 16px 20px;
+            padding: 8px 12px;
             border-bottom: 1px solid #e1e4e8;
             transition: background-color 0.1s ease;
         }
@@ -81,6 +137,15 @@
             background-color: #f6f8fa;
         }
         
+        .approval-member.current-user {
+            background-color: #fff8e1;
+            border-left: 3px solid #ffc107;
+        }
+        
+        .approval-member.current-user:hover {
+            background-color: #fff3cd;
+        }
+        
         /* Member info section */
         .member-info {
             flex: 1;
@@ -90,10 +155,10 @@
         
         /* Avatar */
         .avatar {
-            width: 40px;
-            height: 40px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
-            margin-right: 12px;
+            margin-right: 8px;
             flex-shrink: 0;
             overflow: hidden;
             background: linear-gradient(45deg, #0366d6, #0256cc);
@@ -101,10 +166,10 @@
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 14px;
+            font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
         
         .avatar img {
@@ -117,23 +182,24 @@
         .member-name {
             font-weight: 500;
             color: #24292e;
-            font-size: 16px;
+            font-size: 14px;
         }
         
         /* Status section */
         .status-section {
-            width: 120px;
+            width: 100px;
             display: flex;
             justify-content: flex-start;
+            margin-right: 8px;
         }
         
         .approval-status {
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 10px;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
         
         .status-pending {
@@ -153,13 +219,13 @@
         
         /* Status banner at bottom */
         .status-banner {
-            padding: 20px;
+            padding: 12px;
             text-align: center;
-            font-size: 18px;
+            font-size: 14px;
             font-weight: 500;
             color: white;
-            margin-top: 16px;
-            border-radius: 8px;
+            margin-top: 8px;
+            border-radius: 3px;
         }
         
         .banner-pending {
@@ -177,33 +243,27 @@
         /* Empty states */
         .no-approvals {
             text-align: center;
-            padding: 40px 20px;
+            padding: 20px;
             color: #6b778c;
             font-style: italic;
-            font-size: 14px;
+            font-size: 13px;
             background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         
         .loading {
             text-align: center;
-            padding: 40px 20px;
+            padding: 20px;
             color: #6b778c;
-            font-size: 14px;
+            font-size: 13px;
             background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         
         .error {
             text-align: center;
-            padding: 40px 20px;
+            padding: 20px;
             color: #ef4444;
-            font-size: 14px;
+            font-size: 13px;
             background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         
         /* Loading spinner */
@@ -266,34 +326,34 @@
         
         /* Responsive adjustments */
         @media (max-width: 400px) {
-            body {
-                padding: 8px;
-            }
-            
             .approval-member {
-                padding: 12px 16px;
+                padding: 6px 8px;
             }
             
             .table-header {
-                padding: 8px 16px;
+                padding: 6px 8px;
             }
             
             .approval-header {
-                padding: 12px 16px;
+                padding: 6px 8px;
             }
             
             .avatar {
-                width: 32px;
-                height: 32px;
-                font-size: 12px;
+                width: 24px;
+                height: 24px;
+                font-size: 10px;
             }
             
             .member-name {
-                font-size: 14px;
+                font-size: 13px;
             }
             
             .status-section {
-                width: 100px;
+                width: 80px;
+            }
+            
+            .action-buttons {
+                opacity: 1; /* Always show on mobile */
             }
         }
     </style>
@@ -442,6 +502,12 @@
                 var memberDiv = document.createElement('div');
                 memberDiv.className = 'approval-member';
                 
+                // Check if this is the current user
+                var isCurrentUser = (member.id === currentUserId);
+                if (isCurrentUser) {
+                    memberDiv.classList.add('current-user');
+                }
+                
                 // Member info section
                 var memberInfo = document.createElement('div');
                 memberInfo.className = 'member-info';
@@ -482,6 +548,12 @@
                 memberDiv.appendChild(memberInfo);
                 memberDiv.appendChild(statusSection);
                 
+                // Add action buttons if current user can act
+                if (isCurrentUser) {
+                    var actionButtons = createActionButtons(member);
+                    memberDiv.appendChild(actionButtons);
+                }
+                
                 approvalsList.appendChild(memberDiv);
             });
             
@@ -495,6 +567,77 @@
             }
             
             resizeToContent();
+        }
+        
+        function createActionButtons(member) {
+            var actionButtons = document.createElement('div');
+            actionButtons.className = 'action-buttons';
+            
+            if (member.status === 'approved') {
+                actionButtons.appendChild(createButton('Reject', 'reject-btn', function() {
+                    updateApprovalStatus(member.id, 'rejected');
+                }));
+                actionButtons.appendChild(createButton('Reset', 'reset-btn', function() {
+                    updateApprovalStatus(member.id, 'pending');
+                }));
+                
+            } else if (member.status === 'rejected') {
+                actionButtons.appendChild(createButton('Approve', 'approve-btn', function() {
+                    updateApprovalStatus(member.id, 'approved');
+                }));
+                actionButtons.appendChild(createButton('Reset', 'reset-btn', function() {
+                    updateApprovalStatus(member.id, 'pending');
+                }));
+                
+            } else { // pending
+                actionButtons.appendChild(createButton('Approve', 'approve-btn', function() {
+                    updateApprovalStatus(member.id, 'approved');
+                }));
+                actionButtons.appendChild(createButton('Reject', 'reject-btn', function() {
+                    updateApprovalStatus(member.id, 'rejected');
+                }));
+            }
+            
+            return actionButtons;
+        }
+        
+        function createButton(text, className, onClick) {
+            var button = document.createElement('button');
+            button.className = 'action-btn ' + className;
+            button.textContent = text;
+            button.addEventListener('click', onClick);
+            return button;
+        }
+        
+        function updateApprovalStatus(memberId, status) {
+            console.log('Updating approval status for member:', memberId, 'to:', status);
+            
+            if (!approvalData || !approvalData.members || !approvalData.members[memberId]) {
+                console.error('Invalid approval data or member ID:', memberId);
+                console.log('Current approval data:', approvalData);
+                return;
+            }
+            
+            // Update the member's status
+            approvalData.members[memberId].status = status;
+            approvalData.members[memberId].actionDate = new Date().toISOString();
+            
+            console.log('Updated approval data:', approvalData);
+            
+            // Save updated data using the same pattern as your working popup
+            t.set('card', 'shared', 'approvals', approvalData)
+            .then(function() {
+                console.log('Approval status updated successfully');
+                // Refresh the display
+                displayApprovals();
+            })
+            .catch(function(error) {
+                console.error('Error updating approval status:', error);
+                alert('Failed to update approval status. Please try again.');
+                
+                // Reload the approvals to reset the display
+                loadApprovals();
+            });
         }
         
         function createStatusBanner(status) {
