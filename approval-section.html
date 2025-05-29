@@ -1,4 +1,195 @@
-/* Action buttons that match Trello buttons */
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Approval Status</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: transparent;
+            color: #172b4d;
+            font-size: 14px;
+            line-height: 1.4;
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+        
+        /* Remove the card-like container, make it blend with Trello */
+        .approval-container {
+            padding: 8px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 3px;
+            backdrop-filter: blur(2px);
+        }
+        
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .approval-container {
+                background-color: rgba(30, 30, 30, 0.95);
+                color: #b6c2cf;
+            }
+            
+            body {
+                color: #b6c2cf;
+            }
+            
+            .member-name {
+                color: #b6c2cf;
+            }
+            
+            .member-username {
+                color: #9fadbc;
+            }
+            
+            .approval-member:hover {
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+            
+            .approval-member {
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .reset-btn {
+                background-color: rgba(255, 255, 255, 0.1);
+                color: #9fadbc;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+            }
+            
+            .reset-btn:hover {
+                background-color: rgba(255, 255, 255, 0.15);
+                color: #b6c2cf;
+            }
+        }
+        
+        /* Header that matches Trello's section headers */
+        .approval-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding-bottom: 4px;
+        }
+        
+        .approval-summary {
+            font-size: 12px;
+            color: #6b778c;
+            font-weight: 400;
+        }
+        
+        /* Member items that look like Trello list items */
+        .approval-member {
+            display: flex;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid #091e4208;
+            transition: background-color 0.1s ease;
+        }
+        
+        .approval-member:last-child {
+            border-bottom: none;
+        }
+        
+        .approval-member:hover {
+            background-color: #091e4208;
+            margin: 0 -8px;
+            padding-left: 8px;
+            padding-right: 8px;
+            border-radius: 3px;
+        }
+        
+        .approval-member.current-user {
+            margin: 0 -8px;
+            padding-left: 8px;
+            padding-right: 8px;
+            border-radius: 3px;
+            border-left: 3px solid #0079bf;
+        }
+        
+        .approval-member.current-user:hover {
+            background-color: #091e4208;
+        }
+        
+        /* Trello-style avatars */
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-right: 8px;
+            flex-shrink: 0;
+            overflow: hidden;
+            background: linear-gradient(45deg, #0079bf, #026aa7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            box-shadow: 0 1px 1px rgba(9, 30, 66, 0.25);
+        }
+        
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .approval-member-info {
+            flex: 1;
+            margin-right: 8px;
+            min-width: 0;
+        }
+        
+        .member-name {
+            font-weight: 500;
+            color: #172b4d;
+            margin-bottom: 1px;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .member-username {
+            color: #6b778c;
+            font-size: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Status badges that match Trello labels */
+        .approval-status {
+            padding: 2px 6px;
+            border-radius: 2px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            min-width: 50px;
+            text-align: center;
+            margin-right: 12px;
+        }
+        
+        .status-pending {
+            background-color: #ffd643;
+            color: #7a6100;
+        }
+        
+        .status-approved {
+            background-color: #61bd4f;
+            color: #ffffff;
+        }
+        
+        .status-rejected {
+            background-color: #eb5a46;
+            color: #ffffff;
+        }
+        
+        /* Action buttons that match Trello buttons */
         .action-buttons {
             display: flex;
             gap: 4px;
@@ -13,11 +204,11 @@
         }
         
         .action-btn {
-            padding: 3px 6px;
+            padding: 4px 8px;
             border: none;
             border-radius: 3px;
             cursor: pointer;
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 500;
             transition: all 0.1s ease;
             background-color: #091e420a;
@@ -56,214 +247,29 @@
         .reset-btn:hover {
             background-color: #e4e5ea;
             color: #42526e;
-        }<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Approval Status</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: white;
-            color: #172b4d;
-            font-size: 14px;
-            line-height: 1.4;
-            overflow-x: hidden;
-            box-sizing: border-box;
-        }
-        
-        /* Main container */
-        .approval-container {
-            background-color: white;
-            overflow: hidden;
-        }
-        
-        /* Header */
-        .approval-header {
-            background-color: #f8f9fa;
-            padding: 8px 12px;
-            border-bottom: 1px solid #e1e4e8;
-            font-weight: 600;
-            font-size: 14px;
-            color: #24292e;
-        }
-        
-        /* Table header */
-        .table-header {
-            display: flex;
-            padding: 8px 12px;
-            background-color: #fafbfc;
-            border-bottom: 1px solid #e1e4e8;
-            font-weight: 500;
-            font-size: 11px;
-            color: #586069;
-            text-transform: uppercase;
-        }
-        
-        .header-name {
-            flex: 1;
-            display: flex;
-            align-items: center;
-        }
-        
-        .header-status {
-            width: 120px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .sort-icon {
-            margin-left: 4px;
-            color: #959da5;
-            font-size: 10px;
-        }
-        
-        /* Member rows */
-        .approval-member {
-            display: flex;
-            align-items: center;
-            padding: 8px 12px;
-            border-bottom: 1px solid #e1e4e8;
-            transition: background-color 0.1s ease;
-        }
-        
-        .approval-member:last-child {
-            border-bottom: none;
-        }
-        
-        .approval-member:hover {
-            background-color: #f6f8fa;
-        }
-        
-        .approval-member.current-user {
-            background-color: #fff8e1;
-            border-left: 3px solid #ffc107;
-        }
-        
-        .approval-member.current-user:hover {
-            background-color: #fff3cd;
-        }
-        
-        /* Member info section */
-        .member-info {
-            flex: 1;
-            display: flex;
-            align-items: center;
-        }
-        
-        /* Avatar */
-        .avatar {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            margin-right: 8px;
-            flex-shrink: 0;
-            overflow: hidden;
-            background: linear-gradient(45deg, #0366d6, #0256cc);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        }
-        
-        .avatar img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-        
-        .member-name {
-            font-weight: 500;
-            color: #24292e;
-            font-size: 14px;
-        }
-        
-        /* Status section */
-        .status-section {
-            width: 100px;
-            display: flex;
-            justify-content: flex-start;
-            margin-right: 8px;
-        }
-        
-        .approval-status {
-            padding: 4px 8px;
-            border-radius: 3px;
-            font-size: 10px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-        
-        .status-pending {
-            background-color: #7c3aed;
-            color: white;
-        }
-        
-        .status-approved {
-            background-color: #10b981;
-            color: white;
-        }
-        
-        .status-rejected {
-            background-color: #ef4444;
-            color: white;
-        }
-        
-        /* Status banner at bottom */
-        .status-banner {
-            padding: 12px;
-            text-align: center;
-            font-size: 14px;
-            font-weight: 500;
-            color: white;
-            margin-top: 8px;
-            border-radius: 3px;
-        }
-        
-        .banner-pending {
-            background-color: #7c3aed;
-        }
-        
-        .banner-approved {
-            background-color: #10b981;
-        }
-        
-        .banner-rejected {
-            background-color: #ef4444;
         }
         
         /* Empty states */
         .no-approvals {
             text-align: center;
-            padding: 20px;
+            padding: 16px 0;
             color: #6b778c;
             font-style: italic;
             font-size: 13px;
-            background-color: white;
         }
         
         .loading {
             text-align: center;
-            padding: 20px;
+            padding: 16px 0;
             color: #6b778c;
             font-size: 13px;
-            background-color: white;
         }
         
         .error {
             text-align: center;
-            padding: 20px;
-            color: #ef4444;
+            padding: 16px 0;
+            color: #eb5a46;
             font-size: 13px;
-            background-color: white;
         }
         
         /* Loading spinner */
@@ -271,9 +277,9 @@
             display: inline-block;
             width: 16px;
             height: 16px;
-            border: 2px solid #e1e4e8;
+            border: 2px solid #dfe1e6;
             border-radius: 50%;
-            border-top-color: #0366d6;
+            border-top-color: #0079bf;
             animation: spin 1s ease-in-out infinite;
             margin-right: 8px;
         }
@@ -282,78 +288,20 @@
             to { transform: rotate(360deg); }
         }
         
-        /* Dark mode support */
-        @media (prefers-color-scheme: dark) {
-            body {
-                background-color: #0d1117;
-                color: #c9d1d9;
-            }
-            
-            .approval-container {
-                background-color: #161b22;
-            }
-            
-            .approval-header {
-                background-color: #21262d;
-                color: #c9d1d9;
-                border-bottom-color: #30363d;
-            }
-            
-            .table-header {
-                background-color: #21262d;
-                color: #8b949e;
-                border-bottom-color: #30363d;
-            }
-            
-            .approval-member {
-                border-bottom-color: #30363d;
-            }
-            
-            .approval-member:hover {
-                background-color: #21262d;
-            }
-            
-            .member-name {
-                color: #c9d1d9;
-            }
-            
-            .no-approvals,
-            .loading,
-            .error {
-                background-color: #161b22;
-            }
-        }
-        
         /* Responsive adjustments */
         @media (max-width: 400px) {
-            .approval-member {
-                padding: 6px 8px;
-            }
-            
-            .table-header {
-                padding: 6px 8px;
-            }
-            
-            .approval-header {
-                padding: 6px 8px;
-            }
-            
-            .avatar {
-                width: 24px;
-                height: 24px;
-                font-size: 10px;
-            }
-            
-            .member-name {
-                font-size: 13px;
-            }
-            
-            .status-section {
-                width: 80px;
+            .member-name,
+            .member-username {
+                font-size: 12px;
             }
             
             .action-buttons {
                 opacity: 1; /* Always show on mobile */
+            }
+            
+            .action-btn {
+                font-size: 10px;
+                padding: 3px 6px;
             }
         }
     </style>
@@ -366,22 +314,10 @@
     
     <div id="approval-container" class="approval-container" style="display: none;">
         <div class="approval-header">
-            Approval
+            <div class="approval-summary" id="approval-summary"></div>
         </div>
-        
-        <div class="table-header">
-            <div class="header-name">
-                Name <span class="sort-icon">↕</span>
-            </div>
-            <div class="header-status">
-                Status <span class="sort-icon">↕</span>
-            </div>
-        </div>
-        
         <div id="approvals-list"></div>
     </div>
-    
-    <div id="status-banner-container"></div>
     
     <div id="no-approvals" class="no-approvals" style="display: none;">
         No approvals have been created for this card yet.
@@ -400,7 +336,6 @@
         function showLoading() {
             document.getElementById('loading').style.display = 'block';
             document.getElementById('approval-container').style.display = 'none';
-            document.getElementById('status-banner-container').innerHTML = '';
             document.getElementById('no-approvals').style.display = 'none';
             document.getElementById('error').style.display = 'none';
         }
@@ -416,7 +351,6 @@
         function showNoApprovals() {
             document.getElementById('loading').style.display = 'none';
             document.getElementById('approval-container').style.display = 'none';
-            document.getElementById('status-banner-container').innerHTML = '';
             document.getElementById('no-approvals').style.display = 'block';
             document.getElementById('error').style.display = 'none';
             resizeToContent();
@@ -425,16 +359,17 @@
         function showError() {
             document.getElementById('loading').style.display = 'none';
             document.getElementById('approval-container').style.display = 'none';
-            document.getElementById('status-banner-container').innerHTML = '';
             document.getElementById('no-approvals').style.display = 'none';
             document.getElementById('error').style.display = 'block';
         }
         
         function resizeToContent() {
+            // Wait for DOM to update, then resize
             setTimeout(function() {
                 var body = document.body;
                 var html = document.documentElement;
                 
+                // Get the full height of the content
                 var height = Math.max(
                     body.scrollHeight,
                     body.offsetHeight,
@@ -443,10 +378,13 @@
                     html.offsetHeight
                 );
                 
+                // Add some padding to prevent cutting off
                 height += 20;
                 
+                // Resize the iframe to fit content
                 t.sizeTo('body').catch(function(error) {
                     console.log('Resize failed, trying alternative:', error);
+                    // Alternative resize method
                     t.sizeTo('#approval-container');
                 });
             }, 50);
@@ -455,11 +393,13 @@
         function loadApprovals() {
             showLoading();
             
+            // Get current member first, then approval data
             t.member('all')
             .then(function(currentMember) {
                 currentUserId = currentMember.id;
                 console.log('Current user ID:', currentUserId);
                 
+                // Now get approval data using the same pattern as your working popup
                 return t.get('card', 'shared', 'approvals');
             })
             .then(function(data) {
@@ -483,34 +423,41 @@
         
         function displayApprovals() {
             var approvalsList = document.getElementById('approvals-list');
-            var statusBannerContainer = document.getElementById('status-banner-container');
+            var summaryDiv = document.getElementById('approval-summary');
             
             approvalsList.innerHTML = '';
-            statusBannerContainer.innerHTML = '';
             
             var members = Object.values(approvalData.members);
+            var totalCount = members.length;
+            var approvedCount = members.filter(m => m.status === 'approved').length;
+            var rejectedCount = members.filter(m => m.status === 'rejected').length;
+            var pendingCount = members.filter(m => m.status === 'pending').length;
             
-            // Sort members by name
+            // Update summary
+            var summaryText = approvedCount + ' of ' + totalCount + ' approved';
+            if (rejectedCount > 0) {
+                summaryText += ' • ' + rejectedCount + ' rejected';
+            }
+            if (pendingCount > 0) {
+                summaryText += ' • ' + pendingCount + ' pending';
+            }
+            summaryDiv.textContent = summaryText;
+            
+            // Sort members by status (pending first, then approved, then rejected)
             members.sort(function(a, b) {
-                var nameA = (a.fullName || a.username || '').toLowerCase();
-                var nameB = (b.fullName || b.username || '').toLowerCase();
-                return nameA.localeCompare(nameB);
+                var statusOrder = { 'pending': 0, 'approved': 1, 'rejected': 2 };
+                return statusOrder[a.status] - statusOrder[b.status];
             });
             
-            // Display each member
             members.forEach(function(member) {
                 var memberDiv = document.createElement('div');
                 memberDiv.className = 'approval-member';
                 
-                // Check if this is the current user
-                var isCurrentUser = (member.id === currentUserId);
-                if (isCurrentUser) {
+                // Allow current user to change their own status (always)
+                var canAction = (member.id === currentUserId);
+                if (canAction) {
                     memberDiv.classList.add('current-user');
                 }
-                
-                // Member info section
-                var memberInfo = document.createElement('div');
-                memberInfo.className = 'member-info';
                 
                 var avatar = document.createElement('div');
                 avatar.className = 'avatar';
@@ -528,28 +475,32 @@
                     avatar.textContent = getInitials(member);
                 }
                 
+                var memberInfo = document.createElement('div');
+                memberInfo.className = 'approval-member-info';
+                
                 var name = document.createElement('div');
                 name.className = 'member-name';
                 name.textContent = member.fullName || member.username || 'Unknown Member';
                 
-                memberInfo.appendChild(avatar);
                 memberInfo.appendChild(name);
                 
-                // Status section
-                var statusSection = document.createElement('div');
-                statusSection.className = 'status-section';
+                if (member.username && member.fullName) {
+                    var username = document.createElement('div');
+                    username.className = 'member-username';
+                    username.textContent = '@' + member.username;
+                    memberInfo.appendChild(username);
+                }
                 
                 var statusSpan = document.createElement('span');
                 statusSpan.className = 'approval-status status-' + member.status;
                 statusSpan.textContent = member.status;
                 
-                statusSection.appendChild(statusSpan);
-                
+                memberDiv.appendChild(avatar);
                 memberDiv.appendChild(memberInfo);
-                memberDiv.appendChild(statusSection);
+                memberDiv.appendChild(statusSpan);
                 
                 // Add action buttons if current user can act
-                if (isCurrentUser) {
+                if (canAction) {
                     var actionButtons = createActionButtons(member);
                     memberDiv.appendChild(actionButtons);
                 }
@@ -557,16 +508,19 @@
                 approvalsList.appendChild(memberDiv);
             });
             
-            // Create status banner based on the current user's status (if they exist in the list)
-            var currentUserMember = members.find(function(member) {
-                return member.id === currentUserId;
-            });
-            
-            if (currentUserMember) {
-                createStatusBanner(currentUserMember.status);
-            }
-            
             resizeToContent();
+        }
+        
+        function getInitials(member) {
+            if (member.fullName) {
+                var parts = member.fullName.split(' ');
+                return parts.length > 1 ? 
+                    parts[0].charAt(0).toUpperCase() + parts[parts.length-1].charAt(0).toUpperCase() :
+                    parts[0].charAt(0).toUpperCase();
+            } else if (member.username) {
+                return member.username.charAt(0).toUpperCase();
+            }
+            return '?';
         }
         
         function createActionButtons(member) {
@@ -638,26 +592,6 @@
                 // Reload the approvals to reset the display
                 loadApprovals();
             });
-        }
-        
-        function createStatusBanner(status) {
-            var statusBannerContainer = document.getElementById('status-banner-container');
-            var banner = document.createElement('div');
-            banner.className = 'status-banner banner-' + status;
-            banner.textContent = status.charAt(0).toUpperCase() + status.slice(1);
-            statusBannerContainer.appendChild(banner);
-        }
-        
-        function getInitials(member) {
-            if (member.fullName) {
-                var parts = member.fullName.split(' ');
-                return parts.length > 1 ? 
-                    parts[0].charAt(0).toUpperCase() + parts[parts.length-1].charAt(0).toUpperCase() :
-                    parts[0].charAt(0).toUpperCase();
-            } else if (member.username) {
-                return member.username.charAt(0).toUpperCase();
-            }
-            return '?';
         }
         
         // Load approvals when section opens
