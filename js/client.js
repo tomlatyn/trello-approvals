@@ -33,8 +33,8 @@ TrelloPowerUp.initialize({
         return t.popup({
           title: 'Manage Approvals',
           url: './manage-approvals.html',
-          height: 800,
-          width: 450
+          height: 600,
+          width: 400
         });
       }
     }];

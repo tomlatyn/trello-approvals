@@ -196,6 +196,7 @@
             opacity: 0;
             transition: opacity 0.1s ease;
             flex-shrink: 0;
+            margin-right: 16px;
         }
         
         .approval-member:hover .action-buttons,
@@ -216,6 +217,8 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            height: 32px;
+            box-sizing: border-box;
         }
         
         .action-btn:hover {
@@ -519,7 +522,6 @@
                 statusSection.appendChild(statusSpan);
                 
                 memberDiv.appendChild(memberInfo);
-                memberDiv.appendChild(statusSection);
                 
                 // Add action buttons if current user can act
                 if (isCurrentUser) {
@@ -527,19 +529,49 @@
                     memberDiv.appendChild(actionButtons);
                 }
                 
+                memberDiv.appendChild(statusSection);
+                
                 approvalsList.appendChild(memberDiv);
             });
             
-            // Create status banner based on the current user's status (if they exist in the list)
-            var currentUserMember = members.find(function(member) {
-                return member.id === currentUserId;
-            });
-            
-            if (currentUserMember) {
-                createStatusBanner(currentUserMember.status);
-            }
+            // Create status banner based on overall approval status
+            var overallStatus = calculateOverallStatus(members);
+            createStatusBanner(overallStatus);
             
             resizeToContent();
+        }
+        
+        function calculateOverallStatus(members) {
+            // Count each status type
+            var statusCounts = {
+                pending: 0,
+                approved: 0,
+                rejected: 0
+            };
+            
+            members.forEach(function(member) {
+                if (statusCounts.hasOwnProperty(member.status)) {
+                    statusCounts[member.status]++;
+                }
+            });
+            
+            console.log('Status counts:', statusCounts);
+            
+            // Apply the logic:
+            // 1. If there are any pending approvals -> "pending"
+            // 2. If no pending and at least one rejected -> "rejected"
+            // 3. If all are approved -> "approved"
+            
+            if (statusCounts.pending > 0) {
+                return 'pending';
+            } else if (statusCounts.rejected > 0) {
+                return 'rejected';
+            } else if (statusCounts.approved > 0) {
+                return 'approved';
+            } else {
+                // Fallback case (shouldn't happen with valid data)
+                return 'pending';
+            }
         }
         
         function createActionButtons(member) {
@@ -642,25 +674,8 @@
         function createStatusBanner(status) {
             var statusBannerContainer = document.getElementById('status-banner-container');
             var banner = document.createElement('div');
-            banner.className = 'status-banner';
-
-            // Count statuses
-            var pendingCount = members.filter(function(m) { return m.status === 'pending'; }).length;
-            var rejectedCount = members.filter(function(m) { return m.status === 'rejected'; }).length;
-            var approvedCount = members.filter(function(m) { return m.status === 'approved'; }).length;
-
-            // Determine overall status based on priority: pending > rejected > approved
-            var overallStatus;
-            if (pendingCount > 0) {
-                overallStatus = 'pending';
-            } else if (rejectedCount > 0) {
-                overallStatus = 'rejected';
-            } else {
-                overallStatus = 'approved';
-            }
-
-            banner.classList.add('banner-' + overallStatus);
-            banner.textContent = overallStatus.charAt(0).toUpperCase() + overallStatus.slice(1);
+            banner.className = 'status-banner banner-' + status;
+            banner.textContent = status.charAt(0).toUpperCase() + status.slice(1);
             statusBannerContainer.appendChild(banner);
         }
         
