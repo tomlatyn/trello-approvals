@@ -642,8 +642,25 @@
         function createStatusBanner(status) {
             var statusBannerContainer = document.getElementById('status-banner-container');
             var banner = document.createElement('div');
-            banner.className = 'status-banner banner-' + status;
-            banner.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+            banner.className = 'status-banner';
+
+            // Count statuses
+            var pendingCount = members.filter(function(m) { return m.status === 'pending'; }).length;
+            var rejectedCount = members.filter(function(m) { return m.status === 'rejected'; }).length;
+            var approvedCount = members.filter(function(m) { return m.status === 'approved'; }).length;
+
+            // Determine overall status based on priority: pending > rejected > approved
+            var overallStatus;
+            if (pendingCount > 0) {
+                overallStatus = 'pending';
+            } else if (rejectedCount > 0) {
+                overallStatus = 'rejected';
+            } else {
+                overallStatus = 'approved';
+            }
+
+            banner.classList.add('banner-' + overallStatus);
+            banner.textContent = overallStatus.charAt(0).toUpperCase() + overallStatus.slice(1);
             statusBannerContainer.appendChild(banner);
         }
         
