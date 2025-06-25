@@ -33,7 +33,7 @@ window.TrelloApprovalBadges = {
 
     // Alternative colorful emoji icons (use with monochrome: false)
     EMOJI_ICONS: {
-        pending: '🟡',         // Yellow circle for pending
+        pending: '🟣',         // Purple circle for pending
         approved: '🟢',        // Green circle for approved
         rejected: '🔴'         // Red circle for rejected
     },
@@ -101,13 +101,11 @@ window.TrelloApprovalBadges = {
         if (useIcons) {
             var iconSet = useEmojiIcons ? this.EMOJI_ICONS : this.ICONS;
             var icon = iconSet[status] || iconSet.pending;
-            // Use lowercase to prevent Trello from auto-uppercasing
-            var text = status.toLowerCase();
+            var text = status;
             return icon + ' ' + text;
         }
 
-        // Just the status text in lowercase
-        return status.toLowerCase();
+        return status;
     },
 
     /**
@@ -210,9 +208,3 @@ window.TrelloApprovalBadges = {
         });
     }
 };
-
-// Usage in Power-Up initialization:
-// TrelloPowerUp.initialize({
-//   'card-badges': TrelloApprovalBadges.getCardBadges,
-//   // ... other capabilities
-// });
