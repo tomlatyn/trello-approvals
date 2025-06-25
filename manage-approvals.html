@@ -3,209 +3,9 @@
 <head>
     <meta charset="utf-8">
     <title>Manage Approvals</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 16px;
-            background-color: #ffffff;
-            color: #172b4d;
-            font-size: 14px;
-            line-height: 1.4;
-            box-sizing: border-box;
-        }
-        
-        .member-item {
-            display: flex;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid #091e4208;
-            transition: background-color 0.1s ease;
-            cursor: pointer;
-            margin: 0 -8px;
-            padding-left: 8px;
-            padding-right: 8px;
-            border-radius: 3px;
-        }
-        
-        .member-item:hover {
-            background-color: #091e4208;
-        }
-        
-        .member-item.selected {
-            background-color: #e4f3ff;
-        }
-        
-        .member-checkbox {
-            margin-right: 12px;
-            width: 16px;
-            height: 16px;
-            accent-color: #0079bf;
-        }
-        
-        .avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            margin-right: 8px;
-            flex-shrink: 0;
-            overflow: hidden;
-            background: linear-gradient(45deg, #0079bf, #026aa7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            box-shadow: 0 1px 1px rgba(9, 30, 66, 0.25);
-        }
-        
-        .avatar img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-        
-        .member-info {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .member-name {
-            font-weight: 500;
-            color: #172b4d;
-            margin-bottom: 1px;
-            font-size: 14px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .member-username {
-            color: #6b778c;
-            font-size: 12px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .action-buttons {
-            margin-top: 16px;
-            display: flex;
-            gap: 8px;
-            padding-top: 16px;
-            border-top: 1px solid #dfe1e6;
-        }
-        
-        .save-button, .delete-button {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            flex: 1;
-            transition: all 0.1s ease;
-        }
-        
-        .save-button {
-            background-color: #0079bf;
-            color: white;
-        }
-        
-        .save-button:hover:not(:disabled) {
-            background-color: #005a8b;
-        }
-        
-        .save-button:disabled {
-            background-color: #dfe1e6;
-            color: #a5adba;
-            cursor: not-allowed;
-        }
-        
-        .delete-button {
-            background-color: #eb5a46;
-            color: white;
-        }
-        
-        .delete-button:hover {
-            background-color: #cf513d;
-        }
-        
-        .selected-count {
-            color: #6b778c;
-            font-size: 12px;
-            margin-bottom: 8px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #dfe1e6;
-        }
-        
-        .selected-count.has-selection {
-            color: #0079bf;
-            font-weight: 500;
-        }
-        
-        .members-list {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 32px;
-            color: #6b778c;
-        }
-        
-        .spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #dfe1e6;
-            border-radius: 50%;
-            border-top-color: #0079bf;
-            animation: spin 1s ease-in-out infinite;
-            margin-bottom: 8px;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .error {
-            text-align: center;
-            padding: 32px;
-            color: #eb5a46;
-        }
-        
-        .error button {
-            margin-top: 12px;
-            padding: 8px 16px;
-            background-color: #eb5a46;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        
-        .error button:hover {
-            background-color: #cf513d;
-        }
-        
-        .hidden {
-            display: none !important;
-        }
-        
-        .member-count {
-            font-size: 12px;
-            color: #6b778c;
-            margin-bottom: 12px;
-        }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="manage-approvals">
     <div id="loading" class="loading">
         <div class="spinner"></div>
         <p>Loading board members...</p>
@@ -232,6 +32,8 @@
     </div>
     
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
+    <script src="js/mock-data.js"></script>
+    <script src="js/mock-utils.js"></script>
     <script>
         var t = TrelloPowerUp.iframe();
         var allMembers = [];
@@ -263,114 +65,10 @@
         function loadData() {
             showLoading();
             
-            // Use placeholder data for testing
-            var usePlaceholder = false; // Set to false when deploying to Trello
-            
-            if (usePlaceholder) {
-                // Placeholder board members
-                allMembers = [
-                    {
-                        id: 'user123',
-                        fullName: 'John Doe',
-                        username: 'johndoe',
-                        avatarUrl: 'https://i.pravatar.cc/150?img=1'
-                    },
-                    {
-                        id: 'user456',
-                        fullName: 'Jane Smith',
-                        username: 'janesmith',
-                        avatarUrl: 'https://i.pravatar.cc/150?img=2'
-                    },
-                    {
-                        id: 'user789',
-                        fullName: 'Mike Johnson',
-                        username: 'mikej',
-                        avatarUrl: null // This will show initials
-                    },
-                    {
-                        id: 'user101',
-                        fullName: 'Sarah Wilson',
-                        username: 'sarahw',
-                        avatarUrl: 'https://i.pravatar.cc/150?img=3'
-                    },
-                    {
-                        id: 'user202',
-                        fullName: 'Tom Brown',
-                        username: 'tombrown',
-                        avatarUrl: 'https://i.pravatar.cc/150?img=4'
-                    },
-                    {
-                        id: 'user303',
-                        fullName: 'Lisa Davis',
-                        username: 'lisad',
-                        avatarUrl: 'https://i.pravatar.cc/150?img=5'
-                    },
-                    {
-                        id: 'user404',
-                        fullName: 'David Lee',
-                        username: 'davidlee',
-                        avatarUrl: null // This will show initials
-                    },
-                    {
-                        id: 'user505',
-                        fullName: 'Emma Taylor',
-                        username: 'emmat',
-                        avatarUrl: 'https://i.pravatar.cc/150?img=6'
-                    }
-                ];
-                
-                // Existing approvals (some members already selected)
-                existingApprovals = {
-                    members: {
-                        'user123': {
-                            id: 'user123',
-                            fullName: 'John Doe',
-                            username: 'johndoe',
-                            avatarUrl: 'https://i.pravatar.cc/150?img=1',
-                            status: 'pending',
-                            actionDate: new Date().toISOString()
-                        },
-                        'user456': {
-                            id: 'user456',
-                            fullName: 'Jane Smith',
-                            username: 'janesmith',
-                            avatarUrl: 'https://i.pravatar.cc/150?img=2',
-                            status: 'approved',
-                            actionDate: new Date().toISOString()
-                        },
-                        'user789': {
-                            id: 'user789',
-                            fullName: 'Mike Johnson',
-                            username: 'mikej',
-                            avatarUrl: null,
-                            status: 'rejected',
-                            actionDate: new Date().toISOString()
-                        }
-                    },
-                    createdAt: new Date().toISOString(),
-                    createdBy: 'user123'
-                };
-                
-                console.log('Using placeholder data');
-                console.log('Board members:', allMembers);
-                console.log('Existing approvals:', existingApprovals);
-                
-                if (existingApprovals && existingApprovals.members) {
-                    // Pre-select existing members
-                    selectedMembers = Object.keys(existingApprovals.members);
-                    document.getElementById('delete-button').classList.remove('hidden');
-                }
-                
-                displayMembers(allMembers);
-                updateSelectedCount();
-                showContent();
-                return;
-            }
-            
-            // Real Trello implementation
+            // Use the new API wrapper that automatically handles mock vs real data
             Promise.all([
-                loadBoardMembers(),
-                t.get('card', 'shared', 'approvals', null)
+                TrelloMockUtils.api.getBoardMembers(),
+                TrelloMockUtils.api.getApprovalData()
             ])
             .then(function(results) {
                 allMembers = results[0];
@@ -395,66 +93,6 @@
             });
         }
         
-        function loadBoardMembers() {
-            return new Promise(function(resolve, reject) {
-                console.log('Starting to load board members...');
-                
-                t.board('all')
-                .then(function(board) {
-                    console.log('Board info:', board);
-                    
-                    if (board.members && board.members.length > 0) {
-                        console.log('Found members in board.members:', board.members.length);
-                        resolve(board.members);
-                        return;
-                    }
-                    
-                    if (board.idOrganization) {
-                        console.log('Board has organization:', board.idOrganization);
-                        return t.organization('all');
-                    } else {
-                        console.log('Board is not part of a workspace, trying board members');
-                        return t.board('members');
-                    }
-                })
-                .then(function(result) {
-                    if (!result) return; // Already resolved above
-                    
-                    if (result.id && result.name && result.hasOwnProperty('members')) {
-                        console.log('Organization info:', result);
-                        if (result.members && result.members.length > 0) {
-                            resolve(result.members);
-                            return;
-                        } else {
-                            return t.board('members');
-                        }
-                    } else {
-                        console.log('Board members result:', result);
-                        var members = null;
-                        
-                        if (Array.isArray(result)) {
-                            members = result;
-                        } else if (result.members) {
-                            if (result.members.members && Array.isArray(result.members.members)) {
-                                members = result.members.members;
-                            } else if (Array.isArray(result.members)) {
-                                members = result.members;
-                            }
-                        }
-                        
-                        if (members && members.length > 0) {
-                            resolve(members);
-                        } else {
-                            throw new Error('No board members found');
-                        }
-                    }
-                })
-                .catch(function(error) {
-                    console.error('Error loading members:', error);
-                    reject(error);
-                });
-            });
-        }
         
         function displayMembers(members) {
             var membersList = document.getElementById('members-list');
@@ -584,15 +222,6 @@
                 return;
             }
             
-            // For placeholder mode, just simulate save
-            var usePlaceholder = false; // Should match the flag in loadData
-            
-            if (usePlaceholder) {
-                console.log('Simulating save in placeholder mode');
-                alert('Save successful! (Placeholder mode)');
-                return;
-            }
-            
             var approvalData = {
                 members: {},
                 createdAt: existingApprovals ? existingApprovals.createdAt : new Date().toISOString(),
@@ -622,15 +251,16 @@
                 };
             });
             
-            t.member('all')
+            // Get current member and save using the new API wrapper
+            TrelloMockUtils.api.getCurrentMember()
             .then(function(currentMember) {
                 approvalData.createdBy = existingApprovals ? existingApprovals.createdBy : currentMember.id;
                 
-                return t.set('card', 'shared', 'approvals', approvalData);
+                return TrelloMockUtils.api.saveApprovalData(approvalData);
             })
             .then(function() {
                 console.log('Approvals saved successfully');
-                t.closePopup();
+                return TrelloMockUtils.api.closePopup();
             })
             .catch(function(error) {
                 console.error('Error saving approvals:', error);
@@ -643,19 +273,11 @@
                 return;
             }
             
-            // For placeholder mode, just simulate delete
-            var usePlaceholder = false; // Should match the flag in loadData
-            
-            if (usePlaceholder) {
-                console.log('Simulating delete in placeholder mode');
-                alert('Delete successful! (Placeholder mode)');
-                return;
-            }
-            
-            t.remove('card', 'shared', 'approvals')
+            // Delete using the new API wrapper
+            TrelloMockUtils.api.deleteApprovalData()
             .then(function() {
                 console.log('Approvals deleted successfully');
-                t.closePopup();
+                return TrelloMockUtils.api.closePopup();
             })
             .catch(function(error) {
                 console.error('Error deleting approvals:', error);
