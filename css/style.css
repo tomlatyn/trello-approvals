@@ -9,11 +9,17 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: white;
-    color: #172b4d;
+    background-color: var(--ds-surface, white);
+    color: var(--ds-text, #172b4d);
     font-size: 14px;
     line-height: 1.4;
     overflow-x: hidden;
+}
+
+/* Dark mode styles - triggered by body.dark-mode class */
+body.dark-mode {
+    background-color: #1d2125 !important;
+    color: #b6c2cf !important;
 }
 
 /* Utility Classes */
@@ -25,9 +31,14 @@ body {
 .loading {
     text-align: center;
     padding: 20px;
-    color: #6b778c;
+    color: var(--ds-text-subtle, #6b778c);
     font-size: 13px;
-    background-color: white;
+    background-color: var(--ds-surface, white);
+}
+
+body.dark-mode .loading {
+    background-color: #1d2125 !important;
+    color: #9fadbc !important;
 }
 
 .spinner {
@@ -61,20 +72,30 @@ body {
 
 /* Main Containers */
 .approval-container {
-    background-color: white;
+    background-color: var(--ds-surface, white);
     overflow: hidden;
+}
+
+body.dark-mode .approval-container {
+    background-color: #1d2125 !important;
 }
 
 /* .content styles handled by body.manage-approvals */
 
 /* Headers */
 .approval-header {
-    background-color: #f8f9fa;
+    background-color: var(--ds-surface-raised, #f8f9fa);
     padding: 8px 12px;
-    border-bottom: 1px solid #e1e4e8;
+    border-bottom: 1px solid var(--ds-border, #e1e4e8);
     font-weight: 600;
     font-size: 14px;
-    color: #24292e;
+    color: var(--ds-text, #24292e);
+}
+
+body.dark-mode .approval-header {
+    background-color: #22272b !important;
+    border-bottom: 1px solid #2c333a !important;
+    color: #b6c2cf !important;
 }
 
 /* Member Items */
@@ -82,7 +103,7 @@ body {
     display: flex;
     align-items: center;
     padding: 8px 12px;
-    border-bottom: 1px solid #e1e4e8;
+    border-bottom: 1px solid var(--ds-border, #e1e4e8);
     transition: background-color 0.1s ease;
 }
 
@@ -91,7 +112,7 @@ body {
 }
 
 .approval-member:hover {
-    background-color: #f6f8fa;
+    background-color: var(--ds-surface-hovered, #f6f8fa);
 }
 
 .approval-member.current-user {
@@ -101,6 +122,23 @@ body {
 
 .approval-member.current-user:hover {
     background-color: #fff3cd;
+}
+
+body.dark-mode .approval-member {
+    border-bottom: 1px solid #2c333a !important;
+}
+
+body.dark-mode .approval-member:hover {
+    background-color: #22272b !important;
+}
+
+body.dark-mode .approval-member.current-user {
+    background-color: #2d2a1f !important;
+    border-left: 3px solid #ffc107 !important;
+}
+
+body.dark-mode .approval-member.current-user:hover {
+    background-color: #3a3426 !important;
 }
 
 .member-item {
@@ -122,6 +160,18 @@ body {
 
 .member-item.selected {
     background-color: #e4f3ff;
+}
+
+body.dark-mode .member-item {
+    border-bottom: 1px solid #2c333a !important;
+}
+
+body.dark-mode .member-item:hover {
+    background-color: #22272b !important;
+}
+
+body.dark-mode .member-item.selected {
+    background-color: #1c2b41 !important;
 }
 
 .member-checkbox {
@@ -176,7 +226,7 @@ body {
 
 .member-name {
     font-weight: 500;
-    color: #24292e;
+    color: var(--ds-text, #24292e);
     font-size: 14px;
     white-space: nowrap;
     overflow: hidden;
@@ -185,16 +235,28 @@ body {
 
 /* Member name for manage-approvals */
 .member-item .member-name {
-    color: #172b4d;
+    color: var(--ds-text, #172b4d);
     margin-bottom: 1px;
 }
 
 .member-username {
-    color: #6b778c;
+    color: var(--ds-text-subtle, #6b778c);
     font-size: 12px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+body.dark-mode .member-name {
+    color: #b6c2cf !important;
+}
+
+body.dark-mode .member-item .member-name {
+    color: #b6c2cf !important;
+}
+
+body.dark-mode .member-username {
+    color: #9fadbc !important;
 }
 
 /* Status Section */
@@ -392,10 +454,10 @@ body {
 .no-approvals {
     text-align: center;
     padding: 20px;
-    color: #6b778c;
+    color: var(--ds-text-subtle, #6b778c);
     font-style: italic;
     font-size: 13px;
-    background-color: white;
+    background-color: var(--ds-surface, white);
 }
 
 .error {
@@ -403,13 +465,27 @@ body {
     padding: 20px;
     color: #ef4444;
     font-size: 13px;
-    background-color: white;
+    background-color: var(--ds-surface, white);
 }
 
 /* Error for manage-approvals */
 #error.error {
     padding: 32px;
     color: #eb5a46;
+}
+
+body.dark-mode .no-approvals {
+    background-color: #1d2125 !important;
+    color: #9fadbc !important;
+}
+
+body.dark-mode .error {
+    background-color: #1d2125 !important;
+    color: #f87168 !important;
+}
+
+body.dark-mode #error.error {
+    color: #f87168 !important;
 }
 
 #error button {
@@ -461,5 +537,9 @@ body {
 /* Manage-approvals specific body styles */
 body.manage-approvals {
     padding: 16px;
-    background-color: #ffffff;
+    background-color: var(--ds-surface, #ffffff);
+}
+
+body.dark-mode.manage-approvals {
+    background-color: #1d2125 !important;
 }

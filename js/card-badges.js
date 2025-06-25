@@ -5,7 +5,7 @@ window.TrelloApprovalBadges = {
     
     // Valid Trello badge colors (from documentation)
     COLORS: {
-        pending: 'purple',     // Purple for pending status
+        pending: 'purple',     // Orange for pending status
         approved: 'green',     // Green for approved status  
         rejected: 'red'        // Red for rejected status
     },
@@ -153,6 +153,7 @@ window.TrelloApprovalBadges = {
         var useIcons = options.useIcons !== false; // Default to true
         var useTextOnly = options.useTextOnly || false;
         var iconType = options.iconType || 'simple'; // 'simple', 'emoji', or 'local'
+        var isDarkMode = options.theme === 'dark';
 
         // Return empty array if no approval data
         if (!approvalData || !approvalData.members) {
@@ -177,6 +178,7 @@ window.TrelloApprovalBadges = {
         
         var overallStatus = this.calculateOverallStatus(members);
         var badgeColor = this.COLORS[overallStatus];
+        
         var badgeText = this.createBadgeText(overallStatus, useIcons, useTextOnly, statusCounts, total, iconType);
 
         console.log('Generated badge:', {
@@ -184,7 +186,8 @@ window.TrelloApprovalBadges = {
             color: badgeColor,
             status: overallStatus,
             memberCount: members.length,
-            statusCounts: statusCounts
+            statusCounts: statusCounts,
+            theme: isDarkMode ? 'dark' : 'light'
         });
 
         // Return array with single badge object matching Trello's expected format

@@ -39,6 +39,30 @@
         var allMembers = [];
         var selectedMembers = [];
         var existingApprovals = null;
+        
+        // Apply theme on page load
+        function applyTheme() {
+            var context = t.getContext();
+            var theme = context.theme || context.initialTheme || 'light';
+            
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+            
+            console.log('Applied theme:', theme);
+        }
+        
+        // Subscribe to theme changes
+        var unsubscribeTheme = t.subscribeToThemeChanges(function(theme) {
+            console.log('Theme changed to:', theme);
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        });
 
         function showLoading() {
             document.getElementById('loading').classList.remove('hidden');
@@ -298,7 +322,8 @@
             deleteApprovals();
         });
         
-        // Load data when popup opens
+        // Initialize theme and load data when popup opens
+        applyTheme();
         loadData();
     </script>
 </body>

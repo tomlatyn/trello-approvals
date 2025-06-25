@@ -32,6 +32,30 @@
         var t = TrelloPowerUp.iframe();
         var currentUserId = null;
         var approvalData = null;
+        
+        // Apply theme on page load
+        function applyTheme() {
+            var context = t.getContext();
+            var theme = context.theme || context.initialTheme || 'light';
+            
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+            
+            console.log('Applied theme:', theme);
+        }
+        
+        // Subscribe to theme changes
+        var unsubscribeTheme = t.subscribeToThemeChanges(function(theme) {
+            console.log('Theme changed to:', theme);
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        });
 
         function showLoading() {
             document.getElementById('loading').classList.remove('hidden');
@@ -346,7 +370,8 @@
             return '?';
         }
         
-        // Load approvals when section opens
+        // Initialize theme and load approvals when section opens
+        applyTheme();
         loadApprovals();
     </script>
 </body>
