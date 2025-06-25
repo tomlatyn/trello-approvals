@@ -41,38 +41,7 @@ TrelloPowerUp.initialize({
   },
   
   'card-badges': function(t, opts) {
-    return t.get('card', 'shared', 'approvals', null)
-    .then(function(approvalData) {
-      if (!approvalData || !approvalData.members) {
-        return [];
-      }
-      
-      var members = Object.values(approvalData.members);
-      var totalCount = members.length;
-      var approvedCount = members.filter(m => m.status === 'approved').length;
-      var rejectedCount = members.filter(m => m.status === 'rejected').length;
-      
-      var badgeColor, badgeText;
-      
-      if (rejectedCount > 0) {
-        badgeColor = '#de350b';
-        badgeText = 'REJECTED';
-      } else if (approvedCount === totalCount) {
-        badgeColor = '#00875a';
-        badgeText = 'APPROVED';
-      } else {
-        badgeColor = '#ff9f1a';
-        badgeText = 'PENDING';
-      }
-      
-      return [{
-        text: badgeText,
-        color: badgeColor
-      }];
-    })
-    .catch(function(error) {
-      console.error('Error in card-badges:', error);
-      return [];
-    });
+    // Use the centralized badge logic
+    return TrelloApprovalBadges.getCardBadges(t, opts);
   },
 });
