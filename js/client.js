@@ -8,7 +8,7 @@ TrelloPowerUp.initialize({
       }
       
       return {
-        title: 'Approvals Pro',
+        title: 'Approvals',
         icon: './icon.png',
         content: {
           type: 'iframe',
@@ -28,7 +28,7 @@ TrelloPowerUp.initialize({
   'card-buttons': function(t, opts) {
     return [{
       icon: './icon.png',
-      text: 'Approvals Pro',
+      text: 'Approvals',
       callback: function(t) {
         return t.popup({
           title: 'Manage Approvals',
