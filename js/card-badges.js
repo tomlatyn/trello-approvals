@@ -5,7 +5,7 @@ window.TrelloApprovalBadges = {
     
     // Valid Trello badge colors (from documentation)
     COLORS: {
-        pending: 'purple',     // Orange for pending status
+        pending: 'purple',     // Purple for pending status
         approved: 'green',     // Green for approved status  
         rejected: 'red'        // Red for rejected status
     },
@@ -29,13 +29,6 @@ window.TrelloApprovalBadges = {
         pending: './icons/pending.svg',     // Relative path to your hosted files
         approved: './icons/approved.svg',   // Relative path to your hosted files
         rejected: './icons/rejected.svg'    // Relative path to your hosted files
-    },
-
-    // Alternative colorful emoji icons (use with monochrome: false)
-    EMOJI_ICONS: {
-        pending: '🟣',         // Purple circle for pending
-        approved: '🟢',        // Green circle for approved
-        rejected: '🔴'         // Red circle for rejected
     },
 
     // Alternative text-only approach (no icons)
@@ -86,26 +79,67 @@ window.TrelloApprovalBadges = {
     },
 
     /**
-     * Create badge text - avoiding automatic uppercasing by Trello
+     * Get the appropriate icon based on status and icon type
+     * @param {string} status - The approval status
+     * @param {string} iconType - Type of icons: 'simple', 'emoji', or 'local'
+     * @returns {string} - The icon (symbol or URL)
+     */
+    getIcon: function(status, iconType) {
+        iconType = iconType || 'simple';
+        
+        switch(iconType) {
+            case 'emoji':
+                return this.EMOJI_ICONS[status] || this.EMOJI_ICONS.pending;
+            case 'local':
+                return this.LOCAL_ICONS[status] || this.LOCAL_ICONS.pending;
+            case 'simple':
+            default:
+                return this.ICONS[status] || this.ICONS.pending;
+        }
+    },
+
+    /**
+     * Create badge text with proper capitalization
      * @param {string} status - The approval status
      * @param {boolean} useIcons - Whether to include icons
      * @param {boolean} useTextOnly - Whether to use text-only approach
-     * @param {boolean} useEmojiIcons - Whether to use colorful emoji icons
+     * @param {Object} statusCounts - Object with counts of each status
+     * @param {number} total - Total number of members
+     * @param {string} iconType - Type of icons to use
      * @returns {string} - Formatted badge text
      */
-    createBadgeText: function(status, useIcons, useTextOnly, useEmojiIcons) {
+    createBadgeText: function(status, useIcons, useTextOnly, statusCounts, total, iconType) {
+        // For pending status, show approved/total format
+        if (status === 'pending') {
+            var approved = statusCounts.approved || 0;
+            var countText = approved + '/' + total;
+            
+            if (useTextOnly) {
+                return countText + ' approved';
+            }
+            
+            if (useIcons) {
+                var icon = this.getIcon(status, iconType);
+                return icon + ' ' + countText;
+            }
+            
+            return countText;
+        }
+        
+        // For approved/rejected status, use proper capitalization
         if (useTextOnly) {
             return this.TEXT_ONLY[status] || this.TEXT_ONLY.pending;
         }
 
         if (useIcons) {
-            var iconSet = useEmojiIcons ? this.EMOJI_ICONS : this.ICONS;
-            var icon = iconSet[status] || iconSet.pending;
-            var text = status;
+            var icon = this.getIcon(status, iconType);
+            // Capitalize first letter properly
+            var text = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
             return icon + ' ' + text;
         }
 
-        return status;
+        // Just the status text with first letter capitalized
+        return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
     },
 
     /**
@@ -118,7 +152,7 @@ window.TrelloApprovalBadges = {
         options = options || {};
         var useIcons = options.useIcons !== false; // Default to true
         var useTextOnly = options.useTextOnly || false;
-        var useEmojiIcons = options.useEmojiIcons || false;
+        var iconType = options.iconType || 'simple'; // 'simple', 'emoji', or 'local'
 
         // Return empty array if no approval data
         if (!approvalData || !approvalData.members) {
@@ -126,23 +160,38 @@ window.TrelloApprovalBadges = {
         }
 
         var members = Object.values(approvalData.members);
+        var total = members.length;
+        
+        // Count each status type
+        var statusCounts = {
+            pending: 0,
+            approved: 0,
+            rejected: 0
+        };
+
+        members.forEach(function(member) {
+            if (statusCounts.hasOwnProperty(member.status)) {
+                statusCounts[member.status]++;
+            }
+        });
+        
         var overallStatus = this.calculateOverallStatus(members);
         var badgeColor = this.COLORS[overallStatus];
-        var badgeText = this.createBadgeText(overallStatus, useIcons, useTextOnly, useEmojiIcons);
+        var badgeText = this.createBadgeText(overallStatus, useIcons, useTextOnly, statusCounts, total, iconType);
 
         console.log('Generated badge:', {
             text: badgeText,
             color: badgeColor,
             status: overallStatus,
-            memberCount: members.length
+            memberCount: members.length,
+            statusCounts: statusCounts
         });
 
         // Return array with single badge object matching Trello's expected format
         return [{
             text: badgeText,
             color: badgeColor,
-            monochrome: options.monochrome !== false // Default to true (monochrome), can be overridden
-            // Note: refresh property is not needed as badges auto-refresh when card data changes
+            monochrome: iconType === 'local' ? true : (options.monochrome !== false)
         }];
     },
 
@@ -159,8 +208,8 @@ window.TrelloApprovalBadges = {
             return TrelloApprovalBadges.generateCardBadges(approvalData, {
                 useIcons: true,        // Set to false to disable icons
                 useTextOnly: false,    // Set to true for text-only badges
-                useEmojiIcons: false,  // Set to true to use colorful emoji icons
-                monochrome: true       // Set to false if using colorful icons (like emoji) that shouldn't be filtered
+                iconType: 'simple',    // 'simple', 'emoji', or 'local'
+                monochrome: true       // Set to false for colorful icons/emojis
             });
         })
         .catch(function(error) {
