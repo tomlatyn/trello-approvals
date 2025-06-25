@@ -5,7 +5,7 @@ window.TrelloApprovalBadges = {
     
     // Valid Trello badge colors (from documentation)
     COLORS: {
-        pending: 'orange',     // Orange for pending status
+        pending: 'purple',     // Orange for pending status
         approved: 'green',     // Green for approved status  
         rejected: 'red'        // Red for rejected status
     },
@@ -22,6 +22,13 @@ window.TrelloApprovalBadges = {
         pending: '🟣',         // Purple circle for pending
         approved: '🟢',        // Green circle for approved
         rejected: '🔴'         // Red circle for rejected
+    },
+
+    // Local file icons (relative to your Power-Up's hosted location)
+    LOCAL_ICONS: {
+        pending: './icons/pending.svg',     // Relative path to your hosted files
+        approved: './icons/approved.svg',   // Relative path to your hosted files
+        rejected: './icons/rejected.svg'    // Relative path to your hosted files
     },
 
     // Alternative colorful emoji icons (use with monochrome: false)
