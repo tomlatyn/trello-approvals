@@ -3,25 +3,25 @@
 
 window.TrelloApprovalBadges = {
     
-    // Color constants matching approval section styles
+    // Valid Trello badge colors (from documentation)
     COLORS: {
-        pending: '#7c3aed',    // Purple - matches .status-pending
-        approved: '#10b981',   // Green - matches .status-approved  
-        rejected: '#ef4444'    // Red - matches .status-rejected
+        pending: 'purple',     // Orange for pending status
+        approved: 'green',     // Green for approved status  
+        rejected: 'red'        // Red for rejected status
     },
 
-    // Icons for different statuses (using Unicode symbols)
+    // Icons for different statuses (using simple, compatible symbols)
     ICONS: {
-        pending: '⏳',         // Hourglass
-        approved: '✅',        // Check mark
-        rejected: '❌'         // Cross mark
+        pending: '○',          // Empty circle for pending
+        approved: '●',         // Filled circle for approved
+        rejected: '×'          // Cross for rejected
     },
 
-    // Alternative icons (simple checkmarks)
-    SIMPLE_ICONS: {
-        pending: '○',          // Empty circle
-        approved: '●',         // Filled circle
-        rejected: '✕'          // Cross
+    // Alternative text-only approach (no icons)
+    TEXT_ONLY: {
+        pending: 'Pending',
+        approved: 'Approved',
+        rejected: 'Rejected'
     },
 
     /**
@@ -47,7 +47,7 @@ window.TrelloApprovalBadges = {
             }
         });
 
-        // Apply the logic (matching approval-section.html):
+        // Apply the logic:
         // 1. If there are any pending approvals -> "pending"
         // 2. If no pending and at least one rejected -> "rejected"  
         // 3. If all are approved -> "approved"
@@ -59,33 +59,32 @@ window.TrelloApprovalBadges = {
         } else if (statusCounts.approved > 0) {
             return 'approved';
         } else {
-            // Fallback case (shouldn't happen with valid data)
+            // Fallback case
             return 'pending';
         }
     },
 
     /**
-     * Format status text with proper capitalization
-     * @param {string} status - The status string
-     * @returns {string} - Formatted status (first letter capitalized)
-     */
-    formatStatusText: function(status) {
-        if (!status) return '';
-        return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
-    },
-
-    /**
-     * Create badge text with icon and formatted status
+     * Create badge text - avoiding automatic uppercasing by Trello
      * @param {string} status - The approval status
-     * @param {boolean} useSimpleIcons - Whether to use simple icons instead of emoji
+     * @param {boolean} useIcons - Whether to include icons
+     * @param {boolean} useTextOnly - Whether to use text-only approach
      * @returns {string} - Formatted badge text
      */
-    createBadgeText: function(status, useSimpleIcons) {
-        var icons = useSimpleIcons ? this.SIMPLE_ICONS : this.ICONS;
-        var icon = icons[status] || icons.pending;
-        var text = this.formatStatusText(status);
-        
-        return icon + ' ' + text;
+    createBadgeText: function(status, useIcons, useTextOnly) {
+        if (useTextOnly) {
+            return this.TEXT_ONLY[status] || this.TEXT_ONLY.pending;
+        }
+
+        if (useIcons) {
+            var icon = this.ICONS[status] || this.ICONS.pending;
+            // Use lowercase to prevent Trello from auto-uppercasing
+            var text = status.toLowerCase();
+            return icon + ' ' + text;
+        }
+
+        // Just the status text in lowercase
+        return status.toLowerCase();
     },
 
     /**
@@ -96,7 +95,8 @@ window.TrelloApprovalBadges = {
      */
     generateCardBadges: function(approvalData, options) {
         options = options || {};
-        var useSimpleIcons = options.useSimpleIcons || false;
+        var useIcons = options.useIcons !== false; // Default to true
+        var useTextOnly = options.useTextOnly || false;
 
         // Return empty array if no approval data
         if (!approvalData || !approvalData.members) {
@@ -106,7 +106,7 @@ window.TrelloApprovalBadges = {
         var members = Object.values(approvalData.members);
         var overallStatus = this.calculateOverallStatus(members);
         var badgeColor = this.COLORS[overallStatus];
-        var badgeText = this.createBadgeText(overallStatus, useSimpleIcons);
+        var badgeText = this.createBadgeText(overallStatus, useIcons, useTextOnly);
 
         console.log('Generated badge:', {
             text: badgeText,
@@ -115,29 +115,76 @@ window.TrelloApprovalBadges = {
             memberCount: members.length
         });
 
+        // Return array with single badge object matching Trello's expected format
         return [{
             text: badgeText,
-            color: badgeColor,
-            refresh: 60 // Refresh every 60 seconds
+            color: badgeColor
+            // Note: refresh property is not needed as badges auto-refresh when card data changes
         }];
     },
 
     /**
      * Main function to be called by Trello Power-Up
+     * This is the callback function for the 'card-badges' capability
      * @param {Object} t - Trello Power-Up context
-     * @param {Object} opts - Options from Trello
+     * @param {Object} opts - Options from Trello (unused in this implementation)
      * @returns {Promise} - Promise resolving to badge array
      */
     getCardBadges: function(t, opts) {
         return t.get('card', 'shared', 'approvals', null)
         .then(function(approvalData) {
             return TrelloApprovalBadges.generateCardBadges(approvalData, {
-                useSimpleIcons: false // Set to true if emoji don't display well
+                useIcons: true,        // Set to false to disable icons
+                useTextOnly: false     // Set to true for text-only badges
             });
         })
         .catch(function(error) {
             console.error('Error generating card badges:', error);
+            return []; // Return empty array on error
+        });
+    },
+
+    /**
+     * Alternative implementation for dynamic badges with counts
+     * Shows approval progress (e.g., "2/5 approved")
+     * @param {Object} t - Trello Power-Up context
+     * @returns {Promise} - Promise resolving to badge array
+     */
+    getDetailedCardBadges: function(t) {
+        return t.get('card', 'shared', 'approvals', null)
+        .then(function(approvalData) {
+            if (!approvalData || !approvalData.members) {
+                return [];
+            }
+
+            var members = Object.values(approvalData.members);
+            var total = members.length;
+            var approved = members.filter(function(m) { return m.status === 'approved'; }).length;
+            var rejected = members.filter(function(m) { return m.status === 'rejected'; }).length;
+            
+            var overallStatus = TrelloApprovalBadges.calculateOverallStatus(members);
+            var badgeColor = TrelloApprovalBadges.COLORS[overallStatus];
+            
+            // Create detailed text showing progress
+            var badgeText = approved + '/' + total + ' approved';
+            if (rejected > 0) {
+                badgeText += ' (' + rejected + ' rejected)';
+            }
+
+            return [{
+                text: badgeText,
+                color: badgeColor
+            }];
+        })
+        .catch(function(error) {
+            console.error('Error generating detailed card badges:', error);
             return [];
         });
     }
 };
+
+// Usage in Power-Up initialization:
+// TrelloPowerUp.initialize({
+//   'card-badges': TrelloApprovalBadges.getCardBadges,
+//   // ... other capabilities
+// });
