@@ -21,7 +21,7 @@
                 Save Changes
             </button>
             <button id="delete-button" class="delete-button hidden">
-                Delete All
+                Delete Approvals
             </button>
         </div>
     </div>
@@ -173,12 +173,6 @@
                 
                 memberInfo.appendChild(name);
                 
-                if (member.username && member.fullName) {
-                    var username = document.createElement('div');
-                    username.className = 'member-username';
-                    username.textContent = '@' + member.username;
-                    memberInfo.appendChild(username);
-                }
                 
                 memberItem.addEventListener('click', function(e) {
                     if (e.target.type !== 'checkbox') {
