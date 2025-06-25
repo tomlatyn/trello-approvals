@@ -9,7 +9,7 @@ TrelloPowerUp.initialize({
       
       return {
         title: 'Approvals',
-        icon: 'https://cdn-icons-png.flaticon.com/512/3024/3024593.png',
+        icon: './icon.png',
         content: {
           type: 'iframe',
           url: t.signUrl('./approval-section.html')
@@ -27,7 +27,7 @@ TrelloPowerUp.initialize({
   // Rest of your code remains the same...
   'card-buttons': function(t, opts) {
     return [{
-      icon: 'https://cdn-icons-png.flaticon.com/512/3024/3024593.png',
+      icon: './icon.png',
       text: 'Approvals',
       callback: function(t) {
         return t.popup({
