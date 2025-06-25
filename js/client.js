@@ -1,37 +1,47 @@
 TrelloPowerUp.initialize({
-  'card-detail-badges': function(t, opts) {
+  // Card back section - shows approval table in the card details
+  'card-back-section': function(t, opts) {
+    return t.get('card', 'shared', 'approvals', null)
+    .then(function(approvalData) {
+      if (!approvalData || !approvalData.members) {
+        return null;
+      }
+      
+      return {
+        title: 'Approvals',
+        icon: './icon.png',
+        content: {
+          type: 'iframe',
+          url: t.signUrl('./approval-section.html')
+          // No height specified = auto height
+          // No resize: false = allows resizing
+        }
+      };
+    })
+    .catch(function(error) {
+      console.error('Error in card-back-section:', error);
+      return null;
+    });
+  },
+  
+  // Rest of your code remains the same...
+  'card-buttons': function(t, opts) {
     return [{
-      title: 'Workspace Members',
-      text: 'View Members',
-      color: 'blue',
+      icon: './icon.png',
+      text: 'Approvals',
       callback: function(t) {
         return t.popup({
-          title: 'Workspace Members',
-          url: './popup.html',
-          height: 400,
-          width: 350
+          title: 'Manage Approvals',
+          url: './manage-approvals.html',
+          height: 600,
+          width: 400
         });
       }
     }];
   },
   
-  'card-buttons': function(t, opts) {
-    return [{
-      icon: 'https://cdn-icons-png.flaticon.com/512/681/681494.png',
-      text: 'Show Members',
-      callback: function(t) {
-        return t.popup({
-          title: 'Workspace Members',
-          url: './popup.html',
-          height: 400,
-          width: 350
-        });
-      }
-    }];
-  }
-}, {
-  appKey: '3aee4001eb85c9f42f6f28d98bf841ca',
-  appName: 'Workspace Members Power-Up',
-  // Request necessary permissions
-  scopes: ['read', 'write']
+  'card-badges': function(t, opts) {
+    // Use the centralized badge logic
+    return TrelloApprovalBadges.getCardBadges(t, opts);
+  },
 });
