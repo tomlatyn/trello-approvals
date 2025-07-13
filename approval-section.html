@@ -10,8 +10,8 @@
 </head>
 <body>
     <div id="loading" class="loading">
-        <span class="spinner"></span>
-        Loading approvals...
+        <div class="spinner"></div>
+        <p>Loading approvals...</p>
     </div>
     
     <div id="approval-container" class="approval-container hidden">
@@ -189,9 +189,6 @@
                 
                 // Check if this is the current user
                 var isCurrentUser = (member.id === currentUserId);
-                if (isCurrentUser) {
-                    memberDiv.classList.add('current-user');
-                }
                 
                 // Member info section
                 var memberInfo = document.createElement('div');
@@ -224,21 +221,30 @@
                 var statusSection = document.createElement('div');
                 statusSection.className = 'status-section';
                 
+                var statusContainer = document.createElement('div');
+                statusContainer.className = 'status-container';
+                
                 var statusSpan = document.createElement('span');
                 statusSpan.className = 'approval-status status-' + member.status;
                 statusSpan.textContent = member.status;
                 
-                statusSection.appendChild(statusSpan);
+                statusContainer.appendChild(statusSpan);
+                statusSection.appendChild(statusContainer);
                 
-                memberDiv.appendChild(memberInfo);
-                
-                // Add action buttons if current user can act
+                // Action buttons section
+                var actionButtons = null;
                 if (isCurrentUser) {
-                    var actionButtons = createActionButtons(member);
-                    memberDiv.appendChild(actionButtons);
+                    actionButtons = createActionButtons(member);
+                } else {
+                    // Create empty action buttons container to maintain layout
+                    actionButtons = document.createElement('div');
+                    actionButtons.className = 'action-buttons';
                 }
                 
+                // Add sections in order: member info, status, action buttons
+                memberDiv.appendChild(memberInfo);
                 memberDiv.appendChild(statusSection);
+                memberDiv.appendChild(actionButtons);
                 
                 approvalsList.appendChild(memberDiv);
             });
@@ -321,14 +327,20 @@
             
             // Add icons to approve and reject buttons
             if (className.includes('approve-btn')) {
-                var icon = document.createElement('span');
+                var icon = document.createElement('img');
                 icon.className = 'btn-icon';
-                icon.innerHTML = '✓';
+                icon.src = 'icons/approve.svg';
+                icon.alt = 'Approve';
+                icon.style.width = '16pt';
+                icon.style.height = '16pt';
                 button.appendChild(icon);
             } else if (className.includes('reject-btn')) {
-                var icon = document.createElement('span');
+                var icon = document.createElement('img');
                 icon.className = 'btn-icon';
-                icon.innerHTML = '✕';
+                icon.src = 'icons/reject.svg';
+                icon.alt = 'Reject';
+                icon.style.width = '16pt';
+                icon.style.height = '16pt';
                 button.appendChild(icon);
             }
             

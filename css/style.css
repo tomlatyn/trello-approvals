@@ -72,12 +72,13 @@ body.dark-mode .loading {
 
 /* Main Containers */
 .approval-container {
-    background-color: var(--ds-surface, white);
+    background-color: #FFFFFF;
     overflow: hidden;
+    padding: 16pt 0 4pt 0;
 }
 
 body.dark-mode .approval-container {
-    background-color: #1d2125 !important;
+    background-color: #282E32 !important;
 }
 
 /* .content styles handled by body.manage-approvals */
@@ -102,43 +103,26 @@ body.dark-mode .approval-header {
 .approval-member {
     display: flex;
     align-items: center;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--ds-border, #e1e4e8);
-    transition: background-color 0.1s ease;
+    height: 52pt;
+    justify-content: space-between;
+    position: relative;
 }
 
-.approval-member:last-child {
-    border-bottom: none;
+/* Divider between rows and after last row */
+.approval-member::after {
+    content: '';
+    position: absolute;
+    bottom: -5pt;
+    left: 0;
+    right: 0;
+    height: 1pt;
+    background-color: #DDDFE5;
+    margin: 5pt 0;
 }
 
-.approval-member:hover {
-    background-color: var(--ds-surface-hovered, #f6f8fa);
-}
 
-.approval-member.current-user {
-    background-color: #fff8e1;
-    border-left: 3px solid #ffc107;
-}
-
-.approval-member.current-user:hover {
-    background-color: #fff3cd;
-}
-
-body.dark-mode .approval-member {
-    border-bottom: 1px solid #2c333a !important;
-}
-
-body.dark-mode .approval-member:hover {
-    background-color: #22272b !important;
-}
-
-body.dark-mode .approval-member.current-user {
-    background-color: #2d2a1f !important;
-    border-left: 3px solid #ffc107 !important;
-}
-
-body.dark-mode .approval-member.current-user:hover {
-    background-color: #3a3426 !important;
+body.dark-mode .approval-member::after {
+    background-color: #282E32;
 }
 
 /* New member item design */
@@ -188,18 +172,19 @@ body.dark-mode .member-item:not(:last-child)::after {
 
 /* Member Info */
 .member-info {
-    flex: 1;
     display: flex;
     align-items: center;
     min-width: 0;
+    flex-shrink: 0;
+    width: 250pt;
 }
 
 /* Avatar Styles */
 .avatar {
-    width: 28px;
-    height: 28px;
+    width: 32pt;
+    height: 32pt;
     border-radius: 50%;
-    margin-right: 8px;
+    margin-right: 12pt;
     flex-shrink: 0;
     overflow: hidden;
     background: linear-gradient(45deg, #0366d6, #0256cc);
@@ -232,12 +217,14 @@ body.dark-mode .member-item:not(:last-child)::after {
 }
 
 .member-name {
-    font-weight: 500;
-    color: var(--ds-text, #24292e);
-    font-size: 14px;
+    font-weight: 600;
+    color: #44546F;
+    font-size: 14pt;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    flex: 1;
+    min-width: 0;
 }
 
 /* Member name for manage-approvals */
@@ -260,7 +247,7 @@ body.dark-mode .member-item:not(:last-child)::after {
 }
 
 body.dark-mode .member-name {
-    color: #b6c2cf !important;
+    color: #B6C2CF !important;
 }
 
 body.dark-mode .member-item .member-name {
@@ -288,67 +275,113 @@ body.dark-mode .member-username {
 
 /* Status Section */
 .status-section {
-    width: 100px;
+    display: flex;
+    justify-content: center;
+    flex: 1;
+    align-items: center;
+}
+
+.status-container {
+    width: 100pt;
     display: flex;
     justify-content: flex-start;
-    margin-right: 8px;
 }
 
 .approval-status {
-    padding: 4px 8px;
-    border-radius: 0px;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
+    padding: 4pt;
+    border-radius: 4pt;
+    font-size: 12pt;
+    font-weight: 500;
+    text-transform: capitalize;
     letter-spacing: 0.3px;
+    display: inline-block;
+    text-align: left;
 }
 
 .status-pending {
-    background-color: #7c3aed;
-    color: white;
+    background-color: #DFD8FD;
+    color: #362C63;
 }
 
 .status-approved {
-    background-color: #10b981;
-    color: white;
+    background-color: #BAF3DB;
+    color: #174B35;
 }
 
 .status-rejected {
-    background-color: #ef4444;
-    color: white;
+    background-color: #FFD5D2;
+    color: #5D1F1A;
+}
+
+/* Dark mode member status tags */
+body.dark-mode .status-pending {
+    background-color: #362C63;
+    color: #DFD8FD;
+}
+
+body.dark-mode .status-approved {
+    background-color: #174B35;
+    color: #BAF3DB;
+}
+
+body.dark-mode .status-rejected {
+    background-color: #5D1F1A;
+    color: #FFD5D2;
 }
 
 /* Status Banner */
 .status-banner {
-    padding: 10px;
-    text-align: center;
-    font-size: 14px;
+    height: 34pt;
+    max-width: 100%;
+    border-radius: 4pt;
+    font-size: 12pt;
     font-weight: 500;
-    color: white;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-top: 8px;
-    border-radius: 0px;
 }
 
 .banner-pending {
-    background-color: #7c3aed;
+    background-color: #DFD8FD;
+    color: #362C63;
 }
 
 .banner-approved {
-    background-color: #10b981;
+    background-color: #DEFFE6;
+    color: #174B35;
 }
 
 .banner-rejected {
-    background-color: #ef4444;
+    background-color: #FFD5D2;
+    color: #5D1F1A;
+}
+
+/* Dark mode status banner */
+body.dark-mode .banner-pending {
+    background-color: #2E2E4A;
+    color: #DFD8FD;
+}
+
+body.dark-mode .banner-approved {
+    background-color: #345B45;
+    color: #BAF3DB;
+}
+
+body.dark-mode .banner-rejected {
+    background-color: #593538;
+    color: #FFD5D2;
 }
 
 /* Action Buttons */
 .action-buttons {
     display: flex;
-    gap: 6px;
-    opacity: 0;
-    transition: opacity 0.1s ease;
+    gap: 8pt;
+    opacity: 1;
     flex-shrink: 0;
-    margin-right: 16px;
+    width: 181pt;
+    justify-content: flex-start;
 }
 
 /* Action buttons for manage-approvals */
@@ -362,60 +395,62 @@ body.dark-mode .member-username {
     flex-direction: column;
 }
 
-.approval-member:hover .action-buttons,
-.approval-member.current-user .action-buttons {
-    opacity: 1;
-}
 
 .action-btn {
-    padding: 8px 12px;
+    padding: 4pt;
     border: none;
-    border-radius: 4px;
+    border-radius: 4pt;
     cursor: pointer;
-    font-size: 11px;
+    font-size: 12pt;
     font-weight: 500;
     transition: all 0.1s ease;
-    background-color: #f0f0f0;
-    color: #42526e;
+    background-color: #F6F6F7;
+    color: #182A4E;
     display: flex;
     align-items: center;
-    gap: 6px;
-    height: 32px;
+    gap: 4pt;
     box-sizing: border-box;
 }
 
 .action-btn:hover {
-    background-color: #e0e0e0;
-    color: #172b4d;
+    background-color: #e8e9ea;
 }
 
-.approve-btn {
-    background-color: #10b981;
-    color: white;
+.approve-btn, .reject-btn, .reset-btn {
+    background-color: #F6F6F7;
+    color: #182A4E;
 }
 
-.approve-btn:hover {
-    background-color: #10b981b7;
+.approve-btn:hover, .reject-btn:hover, .reset-btn:hover {
+    background-color: #e8e9ea;
 }
 
-.reject-btn {
-    background-color: #ef4444;
-    color: white;
+/* Dark mode action buttons */
+body.dark-mode .action-btn,
+body.dark-mode .approve-btn,
+body.dark-mode .reject-btn,
+body.dark-mode .reset-btn {
+    background-color: #2C333A;
+    color: #B6C2CF;
 }
 
-.reject-btn:hover {
-    background-color: #ef4444cc;
+body.dark-mode .action-btn:hover,
+body.dark-mode .approve-btn:hover,
+body.dark-mode .reject-btn:hover,
+body.dark-mode .reset-btn:hover {
+    background-color: #252b31;
 }
 
-.reset-btn {
-    background-color: #f0f0f0;
-    color: #6b778c;
-    border: 1px solid #dfe1e6;
+/* Button icons */
+.btn-icon {
+    flex-shrink: 0;
+    /* Color matches text: #182A4E */
+    filter: brightness(0) saturate(100%) invert(14%) sepia(40%) saturate(1358%) hue-rotate(203deg) brightness(93%) contrast(98%);
 }
 
-.reset-btn:hover {
-    background-color: #e0e0e0;
-    color: #42526e;
+body.dark-mode .btn-icon {
+    /* Color matches text in dark mode: #B6C2CF */
+    filter: brightness(0) saturate(100%) invert(80%) sepia(23%) saturate(1058%) hue-rotate(169deg) brightness(103%) contrast(101%);
 }
 
 /* New Button Styles - General button template */
