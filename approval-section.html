@@ -3,6 +3,9 @@
 <head>
     <meta charset="utf-8">
     <title>Approval Status</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -35,27 +38,37 @@
         
         // Apply theme on page load
         function applyTheme() {
-            var context = t.getContext();
-            var theme = context.theme || context.initialTheme || 'light';
-            
-            if (theme === 'dark') {
-                document.body.classList.add('dark-mode');
-            } else {
+            try {
+                var context = t.getContext();
+                var theme = context ? (context.theme || context.initialTheme || 'light') : 'light';
+                
+                if (theme === 'dark') {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+                
+                console.log('Applied theme:', theme);
+            } catch (error) {
+                console.log('Theme context not available, using light theme:', error.message);
                 document.body.classList.remove('dark-mode');
             }
-            
-            console.log('Applied theme:', theme);
         }
         
         // Subscribe to theme changes
-        var unsubscribeTheme = t.subscribeToThemeChanges(function(theme) {
-            console.log('Theme changed to:', theme);
-            if (theme === 'dark') {
-                document.body.classList.add('dark-mode');
-            } else {
-                document.body.classList.remove('dark-mode');
-            }
-        });
+        var unsubscribeTheme = null;
+        try {
+            unsubscribeTheme = t.subscribeToThemeChanges(function(theme) {
+                console.log('Theme changed to:', theme);
+                if (theme === 'dark') {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+            });
+        } catch (error) {
+            console.log('Theme subscription not available:', error.message);
+        }
 
         function showLoading() {
             document.getElementById('loading').classList.remove('hidden');
@@ -115,14 +128,21 @@
         function loadApprovals() {
             showLoading();
             
+            console.log('🔍 Loading approvals...');
+            console.log('🔍 Mock mode:', TrelloMockUtils.isMockMode());
+            
             // Use the new API wrapper that automatically handles mock vs real data
             Promise.all([
                 TrelloMockUtils.api.getCurrentMember(),
                 TrelloMockUtils.api.getApprovalData()
             ])
             .then(function(results) {
+                console.log('✅ Promise.all resolved with results:', results);
                 var currentMember = results[0];
                 var data = results[1];
+                
+                console.log('📝 Current member:', currentMember);
+                console.log('📝 Approval data:', data);
                 
                 currentUserId = currentMember.id;
                 approvalData = data;
@@ -140,7 +160,8 @@
                 }
             })
             .catch(function(error) {
-                console.error('Error loading approvals:', error);
+                console.error('❌ Error loading approvals:', error);
+                console.error('❌ Error stack:', error.stack);
                 showError();
             });
         }
@@ -371,8 +392,18 @@
         }
         
         // Initialize theme and load approvals when section opens
-        applyTheme();
-        loadApprovals();
+        function initialize() {
+            // Ensure mock utilities are available if needed
+            if (window.TrelloMockUtils && window.TrelloMockUtils.isMockMode()) {
+                window.TrelloMockUtils.mockTrelloIframe();
+            }
+            
+            applyTheme();
+            loadApprovals();
+        }
+        
+        // Wait a bit for all scripts to load
+        setTimeout(initialize, 100);
     </script>
 </body>
 </html>

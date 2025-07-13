@@ -77,10 +77,12 @@ window.TrelloMockUtils = {
         getCurrentMember: function() {
             if (TrelloMockUtils.isMockMode()) {
                 console.log('🎭 [MOCK] Getting current member:', TrelloMockData.currentUserId);
+                var currentMember = TrelloMockData.getMemberById(TrelloMockData.currentUserId);
+                console.log('🎭 [MOCK] Current member data:', currentMember);
                 return Promise.resolve({
                     id: TrelloMockData.currentUserId,
-                    fullName: TrelloMockData.getMemberById(TrelloMockData.currentUserId).fullName,
-                    username: TrelloMockData.getMemberById(TrelloMockData.currentUserId).username
+                    fullName: currentMember.fullName,
+                    username: currentMember.username
                 });
             }
             return window.TrelloPowerUp.iframe().member('all');
@@ -90,6 +92,7 @@ window.TrelloMockUtils = {
         getApprovalData: function() {
             if (TrelloMockUtils.isMockMode()) {
                 console.log('🎭 [MOCK] Getting approval data');
+                console.log('🎭 [MOCK] Mock data:', TrelloMockData.existingApprovals);
                 return Promise.resolve(TrelloMockData.existingApprovals);
             }
             return window.TrelloPowerUp.iframe().get('card', 'shared', 'approvals');
@@ -184,8 +187,69 @@ window.TrelloMockUtils = {
             }
             return window.TrelloPowerUp.iframe().closePopup();
         }
+    },
+
+    // Mock Trello Power-Up iframe for development
+    mockTrelloIframe: function() {
+        if (!window.TrelloPowerUp || !window.TrelloPowerUp.iframe) {
+            console.log('🎭 [MOCK] Creating mock TrelloPowerUp.iframe');
+            
+            window.TrelloPowerUp = window.TrelloPowerUp || {};
+            window.TrelloPowerUp.iframe = function() {
+                return {
+                    getContext: function() {
+                        return {
+                            theme: 'light',
+                            initialTheme: 'light'
+                        };
+                    },
+                    subscribeToThemeChanges: function(callback) {
+                        console.log('🎭 [MOCK] Theme change subscription (no-op)');
+                        return function() {}; // unsubscribe function
+                    },
+                    sizeTo: function(target) {
+                        console.log('🎭 [MOCK] Size to:', target);
+                        return Promise.resolve();
+                    },
+                    member: function(scope) {
+                        return TrelloMockUtils.api.getCurrentMember();
+                    },
+                    get: function(scope, visibility, key) {
+                        if (scope === 'card' && key === 'approvals') {
+                            return TrelloMockUtils.api.getApprovalData();
+                        }
+                        return Promise.resolve(null);
+                    },
+                    set: function(scope, visibility, key, data) {
+                        if (scope === 'card' && key === 'approvals') {
+                            return TrelloMockUtils.api.saveApprovalData(data);
+                        }
+                        return Promise.resolve();
+                    },
+                    remove: function(scope, visibility, key) {
+                        if (scope === 'card' && key === 'approvals') {
+                            return TrelloMockUtils.api.deleteApprovalData();
+                        }
+                        return Promise.resolve();
+                    },
+                    board: function(scope) {
+                        return Promise.resolve({
+                            members: TrelloMockData.boardMembers
+                        });
+                    },
+                    closePopup: function() {
+                        return TrelloMockUtils.api.closePopup();
+                    }
+                };
+            };
+        }
     }
 };
+
+// Initialize mock iframe immediately if in mock mode
+if (TrelloMockUtils.isMockMode()) {
+    TrelloMockUtils.mockTrelloIframe();
+}
 
 // Auto-log the current mode when the script loads
 document.addEventListener('DOMContentLoaded', function() {

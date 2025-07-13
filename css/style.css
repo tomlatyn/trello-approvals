@@ -6,7 +6,7 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
     background-color: var(--ds-surface, white);
@@ -141,45 +141,50 @@ body.dark-mode .approval-member.current-user:hover {
     background-color: #3a3426 !important;
 }
 
+/* New member item design */
 .member-item {
     display: flex;
     align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid #091e4208;
-    transition: background-color 0.1s ease;
+    height: 52pt;
+    max-width: 100%;
+    padding: 0 12pt;
     cursor: pointer;
-    margin: 0 -8px;
-    padding-left: 8px;
-    padding-right: 8px;
-    border-radius: 3px;
+    transition: background-color 0.1s ease;
+    position: relative;
 }
 
 .member-item:hover {
-    background-color: #091e4208;
+    background-color: #f4f5f7;
 }
 
 .member-item.selected {
-    background-color: #e4f3ff;
-}
-
-body.dark-mode .member-item {
-    border-bottom: 1px solid #2c333a !important;
+    background-color: #E5F0FF;
 }
 
 body.dark-mode .member-item:hover {
-    background-color: #22272b !important;
+    background-color: #22272b;
 }
 
 body.dark-mode .member-item.selected {
-    background-color: #1c2b41 !important;
+    background-color: #1C2B41;
 }
 
-.member-checkbox {
-    margin-right: 12px;
-    width: 16px;
-    height: 16px;
-    accent-color: #0079bf;
+/* Divider between rows */
+.member-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    bottom: -5pt;
+    left: 0;
+    right: 0;
+    height: 1pt;
+    background-color: #DDDFE5;
+    margin: 5pt 0;
 }
+
+body.dark-mode .member-item:not(:last-child)::after {
+    background-color: #282E32;
+}
+
 
 /* Member Info */
 .member-info {
@@ -208,13 +213,15 @@ body.dark-mode .member-item.selected {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* Avatar for manage-approvals (different sizing) */
+/* Avatar for manage-approvals (new sizing) */
 .member-item .avatar {
-    width: 32px;
-    height: 32px;
+    width: 32pt;
+    height: 32pt;
     background: linear-gradient(45deg, #0079bf, #026aa7);
     font-size: 12px;
     box-shadow: 0 1px 1px rgba(9, 30, 66, 0.25);
+    margin-right: 12pt;
+    flex-shrink: 0;
 }
 
 .avatar img {
@@ -235,8 +242,13 @@ body.dark-mode .member-item.selected {
 
 /* Member name for manage-approvals */
 .member-item .member-name {
-    color: var(--ds-text, #172b4d);
-    margin-bottom: 1px;
+    color: #44546F;
+    font-size: 14pt;
+    font-weight: 600;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .member-username {
@@ -252,7 +264,22 @@ body.dark-mode .member-name {
 }
 
 body.dark-mode .member-item .member-name {
-    color: #b6c2cf !important;
+    color: #B6C2CF !important;
+}
+
+/* Checkmark for selected members */
+.member-checkmark {
+    width: 24pt;
+    height: 24pt;
+    margin-left: auto;
+    flex-shrink: 0;
+    /* Color matches member name: #44546F */
+    filter: brightness(0) saturate(100%) invert(31%) sepia(23%) saturate(1058%) hue-rotate(194deg) brightness(95%) contrast(89%);
+}
+
+body.dark-mode .member-checkmark {
+    /* Color matches member name in dark mode: #B6C2CF */
+    filter: brightness(0) saturate(100%) invert(80%) sepia(23%) saturate(1058%) hue-rotate(169deg) brightness(103%) contrast(101%);
 }
 
 body.dark-mode .member-username {
@@ -327,10 +354,12 @@ body.dark-mode .member-username {
 /* Action buttons for manage-approvals */
 .content .action-buttons {
     margin-top: 16px;
-    gap: 8px;
+    gap: 8pt;
     padding-top: 16px;
     border-top: 1px solid #dfe1e6;
     opacity: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .approval-member:hover .action-buttons,
@@ -389,40 +418,87 @@ body.dark-mode .member-username {
     color: #42526e;
 }
 
-/* Save/Delete Buttons */
-.save-button, .delete-button {
-    padding: 8px 16px;
+/* New Button Styles - General button template */
+.btn-primary, .btn-secondary, .btn-create {
     border: none;
-    border-radius: 3px;
+    border-radius: 4pt;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 12pt;
     font-weight: 500;
-    flex: 1;
+    height: 34pt;
     transition: all 0.1s ease;
+    width: 100%;
+    text-align: center;
 }
 
-.save-button {
-    background-color: #0079bf;
+/* Create Approvals Button */
+.btn-create {
+    background-color: #20845A;
     color: white;
 }
 
-.save-button:hover:not(:disabled) {
-    background-color: #005a8b;
+.btn-create:hover:not(:disabled) {
+    background-color: #1a6e49;
 }
 
-.save-button:disabled {
+.btn-create:disabled {
     background-color: #dfe1e6;
     color: #a5adba;
     cursor: not-allowed;
 }
 
-.delete-button {
-    background-color: #eb5a46;
+/* Save Changes Button */
+.btn-primary {
+    background-color: #007AD5;
     color: white;
 }
 
-.delete-button:hover {
-    background-color: #cf513d;
+.btn-primary:hover:not(:disabled) {
+    background-color: #0066b3;
+}
+
+.btn-primary:disabled {
+    background-color: #dfe1e6;
+    color: #a5adba;
+    cursor: not-allowed;
+}
+
+/* Delete Approvals Button */
+.btn-secondary {
+    background-color: #F6F6F7;
+    color: #182A4E;
+}
+
+.btn-secondary:hover {
+    background-color: #e8e9ea;
+}
+
+/* Dark mode button styles */
+body.dark-mode .btn-create {
+    background-color: #345B45;
+    color: #BAF3DB;
+}
+
+body.dark-mode .btn-create:hover:not(:disabled) {
+    background-color: #2d4f3b;
+}
+
+body.dark-mode .btn-primary {
+    background-color: #0A326C;
+    color: #CCE0FF;
+}
+
+body.dark-mode .btn-primary:hover:not(:disabled) {
+    background-color: #092951;
+}
+
+body.dark-mode .btn-secondary {
+    background-color: #2C333A;
+    color: #B6C2CF;
+}
+
+body.dark-mode .btn-secondary:hover {
+    background-color: #252b31;
 }
 
 /* Count and Selection Styles */
@@ -432,22 +508,11 @@ body.dark-mode .member-username {
     margin-bottom: 12px;
 }
 
-.selected-count {
-    color: #6b778c;
-    font-size: 12px;
-    margin-bottom: 8px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #dfe1e6;
-}
 
-.selected-count.has-selection {
-    color: #0079bf;
-    font-weight: 500;
-}
 
-.members-list {
-    max-height: 300px;
-    overflow-y: auto;
+/* First member row spacing */
+.member-item:first-child {
+    margin-top: 12pt;
 }
 
 /* Empty States */
@@ -538,6 +603,59 @@ body.dark-mode #error.error {
 body.manage-approvals {
     padding: 16px;
     background-color: var(--ds-surface, #ffffff);
+}
+
+/* Content padding update */
+body.manage-approvals .content {
+    padding-top: 16pt;
+}
+
+/* Persons section styling */
+.persons-section {
+    margin-bottom: 16pt;
+}
+
+/* Members container with background (includes header and list) */
+.members-container {
+    background-color: #F8F8F8;
+    border-radius: 5pt;
+    padding: 16pt 12pt;
+}
+
+body.dark-mode .members-container {
+    background-color: #1D2125;
+}
+
+/* Members list */
+.members-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Persons header row */
+.persons-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.approvers-label {
+    font-size: 10pt;
+    color: #5E6C84;
+    font-weight: 500;
+}
+
+.selected-count {
+    font-size: 10pt;
+    color: #5E6C84;
+    font-weight: 500;
+}
+
+/* Dark mode colors */
+body.dark-mode .approvers-label,
+body.dark-mode .selected-count {
+    color: #B6C2CF;
 }
 
 body.dark-mode.manage-approvals {
