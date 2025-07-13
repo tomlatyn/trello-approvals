@@ -273,14 +273,14 @@
             console.log('Status counts:', statusCounts);
             
             // Apply the logic:
-            // 1. If there are any pending approvals -> "pending"
-            // 2. If no pending and at least one rejected -> "rejected"
+            // 1. If there are any rejected -> "rejected"
+            // 2. If there are any pending and rest approved -> "pending"
             // 3. If all are approved -> "approved"
             
-            if (statusCounts.pending > 0) {
-                return 'pending';
-            } else if (statusCounts.rejected > 0) {
+            if (statusCounts.rejected > 0) {
                 return 'rejected';
+            } else if (statusCounts.pending > 0) {
+                return 'pending';
             } else if (statusCounts.approved > 0) {
                 return 'approved';
             } else {
