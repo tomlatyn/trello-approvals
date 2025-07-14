@@ -72,13 +72,8 @@ body.dark-mode .loading {
 
 /* Main Containers */
 .approval-container {
-    background-color: #FFFFFF;
     overflow: hidden;
     padding: 16px 0 4px 0;
-}
-
-body.dark-mode .approval-container {
-    background-color: #282E32 !important;
 }
 
 /* .content styles handled by body.manage-approvals */
@@ -175,6 +170,22 @@ body.dark-mode .member-item:not(:last-child)::after {
     min-width: 0;
     flex: 1;
     margin-right: 12px;
+}
+
+/* New container layout for approval section */
+.member-left-container {
+    display: flex;
+    align-items: center;
+    width: 50%;
+    min-width: 0;
+}
+
+.member-right-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 50%;
+    min-width: 0;
 }
 
 /* Avatar Styles */
@@ -452,13 +463,13 @@ body.dark-mode .reset-btn:hover {
     flex-shrink: 0;
     width: 16px !important;
     height: 16px !important;
-    /* Same color in light and dark mode: #182A4E */
+    /* Color matches button text in light mode: #182A4E */
     filter: brightness(0) saturate(100%) invert(14%) sepia(40%) saturate(1358%) hue-rotate(203deg) brightness(93%) contrast(98%);
 }
 
 body.dark-mode .btn-icon {
-    /* Same color in both modes */
-    filter: brightness(0) saturate(100%) invert(14%) sepia(40%) saturate(1358%) hue-rotate(203deg) brightness(93%) contrast(98%);
+    /* Color matches button text in dark mode: #B6C2CF */
+    filter: brightness(0) saturate(100%) invert(80%) sepia(23%) saturate(1058%) hue-rotate(169deg) brightness(103%) contrast(101%);
 }
 
 /* New Button Styles - General button template */

@@ -192,9 +192,9 @@
                     memberDiv.classList.add('current-user');
                 }
                 
-                // Member info section
-                var memberInfo = document.createElement('div');
-                memberInfo.className = 'member-info';
+                // First container: Icon and Name (50% width)
+                var leftContainer = document.createElement('div');
+                leftContainer.className = 'member-left-container';
                 
                 var avatar = document.createElement('div');
                 avatar.className = 'avatar';
@@ -216,12 +216,12 @@
                 name.className = 'member-name';
                 name.textContent = member.fullName || member.username || 'Unknown Member';
                 
-                memberInfo.appendChild(avatar);
-                memberInfo.appendChild(name);
+                leftContainer.appendChild(avatar);
+                leftContainer.appendChild(name);
                 
-                // Status section
-                var statusSection = document.createElement('div');
-                statusSection.className = 'status-section';
+                // Second container: Status and Buttons (50% width with space-between)
+                var rightContainer = document.createElement('div');
+                rightContainer.className = 'member-right-container';
                 
                 var statusContainer = document.createElement('div');
                 statusContainer.className = 'status-container';
@@ -231,7 +231,6 @@
                 statusSpan.textContent = member.status;
                 
                 statusContainer.appendChild(statusSpan);
-                statusSection.appendChild(statusContainer);
                 
                 // Action buttons section
                 var actionButtons = null;
@@ -243,10 +242,12 @@
                     actionButtons.className = 'action-buttons';
                 }
                 
-                // Add sections in order: member info, status, action buttons
-                memberDiv.appendChild(memberInfo);
-                memberDiv.appendChild(statusSection);
-                memberDiv.appendChild(actionButtons);
+                rightContainer.appendChild(statusContainer);
+                rightContainer.appendChild(actionButtons);
+                
+                // Add both containers to member div
+                memberDiv.appendChild(leftContainer);
+                memberDiv.appendChild(rightContainer);
                 
                 approvalsList.appendChild(memberDiv);
             });
