@@ -17,24 +17,18 @@ TrelloPowerUp.initialize({
           content: {
             type: 'iframe',
             url: t.signUrl('./approval-section.html')
-          },
-          action: {
-            text: 'Reset all',
-            callback: function(t) {
-              return resetAllApprovals(t);
-            }
           }
         };
         
         // Add "Reset all" action only if user is the creator
-        // if (isCreator) {
-        //   result.action = {
-        //     text: 'Reset all',
-        //     callback: function(t) {
-        //       return resetAllApprovals(t);
-        //     }
-        //   };
-        // }
+        if (isCreator) {
+          result.action = {
+            text: 'Reset all',
+            callback: function(t) {
+              return resetAllApprovals(t);
+            }
+          };
+        }
         
         return result;
       });
@@ -53,7 +47,8 @@ TrelloPowerUp.initialize({
       callback: function(t) {
         return t.popup({
           title: 'Manage Approvals',
-          url: './manage-approvals.html'
+          url: './manage-approvals.html',
+          height: 800
         });
       }
     }];
@@ -83,14 +78,15 @@ function resetAllApprovals(t) {
     return t.set('card', 'shared', 'approvals', approvalData);
   })
   .then(function() {
-    // Refresh the iframe content
-    return t.closePopup();
+    // Force refresh of the iframe content by reloading the card back section
+    return t.card('all').then(function() {
+      // Close any open popup and let Trello refresh the card back section
+      return t.closePopup();
+    });
   })
   .catch(function(error) {
     console.error('Error resetting approvals:', error);
-    return t.popup({
-      title: 'Error',
-      url: './error.html?message=Failed to reset approvals'
-    });
+    alert('Failed to reset approvals. Please try again.');
+    return Promise.resolve();
   });
 }
