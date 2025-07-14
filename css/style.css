@@ -103,8 +103,7 @@ body.dark-mode .approval-header {
 .approval-member {
     display: flex;
     align-items: center;
-    height: 52pt;
-    justify-content: space-between;
+    padding: 10pt;
     position: relative;
 }
 
@@ -175,14 +174,14 @@ body.dark-mode .member-item:not(:last-child)::after {
     display: flex;
     align-items: center;
     min-width: 0;
-    flex-shrink: 0;
-    width: 250pt;
+    flex: 1;
+    margin-right: 16pt;
 }
 
 /* Avatar Styles */
 .avatar {
-    width: 32pt;
-    height: 32pt;
+    width: 28pt;
+    height: 28pt;
     border-radius: 50%;
     margin-right: 12pt;
     flex-shrink: 0;
@@ -219,7 +218,7 @@ body.dark-mode .member-item:not(:last-child)::after {
 .member-name {
     font-weight: 600;
     color: #44546F;
-    font-size: 14pt;
+    font-size: 12pt;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -276,21 +275,15 @@ body.dark-mode .member-username {
 /* Status Section */
 .status-section {
     display: flex;
-    justify-content: center;
-    flex: 1;
+    justify-content: flex-end;
     align-items: center;
 }
 
-.status-container {
-    width: 100pt;
-    display: flex;
-    justify-content: flex-start;
-}
 
 .approval-status {
     padding: 4pt;
     border-radius: 4pt;
-    font-size: 12pt;
+    font-size: 10pt;
     font-weight: 500;
     text-transform: capitalize;
     letter-spacing: 0.3px;
@@ -380,8 +373,20 @@ body.dark-mode .banner-rejected {
     gap: 8pt;
     opacity: 1;
     flex-shrink: 0;
-    width: 181pt;
-    justify-content: flex-start;
+    justify-content: flex-end;
+}
+
+.action-buttons:not(:empty) {
+    margin-left: 16pt;
+}
+
+/* Current user row styling */
+.approval-member.current-user {
+    background-color: #EAEAEA;
+}
+
+body.dark-mode .approval-member.current-user {
+    background-color: #23262A;
 }
 
 /* Action buttons for manage-approvals */
@@ -403,7 +408,7 @@ body.dark-mode .banner-rejected {
     border: none;
     border-radius: 4pt;
     cursor: pointer;
-    font-size: 12pt;
+    font-size: 10pt;
     font-weight: 500;
     transition: all 0.1s ease;
     background-color: #F6F6F7;
@@ -553,7 +558,7 @@ body.dark-mode .btn-primary:disabled {
 
 /* First member row spacing */
 .member-item:first-child {
-    margin-top: 12pt;
+    margin-top: 2pt;
 }
 
 /* Empty States */
@@ -691,7 +696,7 @@ body.dark-mode .members-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 2pt;
 }
 
 .approvers-label {

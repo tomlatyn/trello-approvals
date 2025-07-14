@@ -187,6 +187,11 @@
                 // Check if this is the current user
                 var isCurrentUser = (member.id === currentUserId);
                 
+                // Add current-user class if this is the current user
+                if (isCurrentUser) {
+                    memberDiv.classList.add('current-user');
+                }
+                
                 // Member info section
                 var memberInfo = document.createElement('div');
                 memberInfo.className = 'member-info';
