@@ -186,6 +186,7 @@ window.TrelloApprovalBadges = {
         return [{
             text: badgeText,
             color: badgeColor,
+            icon: iconType === 'local' ? this.getIcon(overallStatus, iconType) : undefined,
             monochrome: iconType === 'local' ? true : (options.monochrome !== false)
         }];
     },

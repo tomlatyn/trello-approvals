@@ -72,8 +72,13 @@ body.dark-mode .loading {
 
 /* Main Containers */
 .approval-container {
+    background-color: #FFFFFF;
     overflow: hidden;
     padding: 16px 0 4px 0;
+}
+
+body.dark-mode .approval-container {
+    background-color: #282E32;
 }
 
 /* .content styles handled by body.manage-approvals */
