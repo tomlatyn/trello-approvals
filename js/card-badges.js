@@ -17,7 +17,6 @@ window.TrelloApprovalBadges = {
         rejected: 'icons/cross.svg'    // Local path to rejected icon
     },
 
-
     /**
      * Calculate overall approval status based on individual member statuses
      * @param {Array} members - Array of member objects with status property
