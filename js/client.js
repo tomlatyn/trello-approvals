@@ -7,16 +7,33 @@ TrelloPowerUp.initialize({
         return null;
       }
       
-      return {
-        title: 'Approvals',
-        icon: './icon.png',
-        content: {
-          type: 'iframe',
-          url: t.signUrl('./approval-section.html')
-          // No height specified = auto height
-          // No resize: false = allows resizing
+      // Check if current user is the creator
+      return t.member('id').then(function(currentUserId) {
+        var isCreator = (approvalData.createdBy === currentUserId);
+        
+        var result = {
+          title: 'Approvals',
+          icon: './icon.png',
+          content: {
+            type: 'iframe',
+            url: t.signUrl('./approval-section.html')
+            // No height specified = auto height
+            // No resize: false = allows resizing
+          }
+        };
+        
+        // Add "Reset all" action only if user is the creator
+        if (isCreator) {
+          result.action = {
+            text: 'Reset all',
+            callback: function(t) {
+              return resetAllApprovals(t);
+            }
+          };
         }
-      };
+        
+        return result;
+      });
     })
     .catch(function(error) {
       console.error('Error in card-back-section:', error);
@@ -45,3 +62,33 @@ TrelloPowerUp.initialize({
     return TrelloApprovalBadges.getCardBadges(t, opts);
   },
 });
+
+// Function to reset all approvals to pending status
+function resetAllApprovals(t) {
+  return t.get('card', 'shared', 'approvals', null)
+  .then(function(approvalData) {
+    if (!approvalData || !approvalData.members) {
+      return;
+    }
+    
+    // Reset all members to pending status
+    Object.keys(approvalData.members).forEach(function(memberId) {
+      approvalData.members[memberId].status = 'pending';
+      approvalData.members[memberId].actionDate = new Date().toISOString();
+    });
+    
+    // Save the updated data
+    return t.set('card', 'shared', 'approvals', approvalData);
+  })
+  .then(function() {
+    // Refresh the iframe content
+    return t.closePopup();
+  })
+  .catch(function(error) {
+    console.error('Error resetting approvals:', error);
+    return t.popup({
+      title: 'Error',
+      url: './error.html?message=Failed to reset approvals'
+    });
+  });
+}
