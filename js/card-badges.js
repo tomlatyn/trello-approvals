@@ -10,12 +10,6 @@ window.TrelloApprovalBadges = {
         rejected: 'red'        // Red for rejected status
     },
 
-    // Icons for different statuses (using simple, compatible symbols)
-    ICONS: {
-        pending: '○',          // Empty circle for pending
-        approved: '✓',         // Checkmark for approved
-        rejected: '×'          // Cross for rejected
-    },
 
 
     // Local file icons (relative to your Power-Up's hosted location)
@@ -75,19 +69,17 @@ window.TrelloApprovalBadges = {
     /**
      * Get the appropriate icon based on status and icon type
      * @param {string} status - The approval status
-     * @param {string} iconType - Type of icons: 'simple' or 'local'
-     * @returns {string} - The icon (symbol or URL)
+     * @param {string} iconType - Type of icons: 'local'
+     * @returns {string} - The icon URL or null
      */
     getIcon: function(status, iconType) {
         iconType = iconType || 'local';
         
-        switch(iconType) {
-            case 'local':
-                return this.LOCAL_ICONS[status] || this.LOCAL_ICONS.pending;
-            case 'simple':
-            default:
-                return this.ICONS[status] || this.ICONS.pending;
+        if (iconType === 'local') {
+            return this.LOCAL_ICONS[status] || this.LOCAL_ICONS.pending;
         }
+        
+        return null;
     },
 
     /**
@@ -97,7 +89,7 @@ window.TrelloApprovalBadges = {
      * @param {boolean} useTextOnly - Whether to use text-only approach
      * @param {Object} statusCounts - Object with counts of each status
      * @param {number} total - Total number of members
-     * @param {string} iconType - Type of icons to use
+     * @param {string} iconType - Type of icons to use (always 'local')
      * @returns {string} - Formatted badge text
      */
     createBadgeText: function(status, useIcons, useTextOnly, statusCounts, total, iconType) {
@@ -110,10 +102,7 @@ window.TrelloApprovalBadges = {
                 return countText + ' approved';
             }
             
-            if (useIcons) {
-                var icon = this.getIcon(status, iconType);
-                return icon + ' ' + countText;
-            }
+            // Icons are handled separately by Trello via the icon property
             
             return countText;
         }
@@ -123,12 +112,7 @@ window.TrelloApprovalBadges = {
             return this.TEXT_ONLY[status] || this.TEXT_ONLY.pending;
         }
 
-        if (useIcons) {
-            var icon = this.getIcon(status, iconType);
-            // Capitalize first letter properly
-            var text = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
-            return icon + ' ' + text;
-        }
+        // Icons are handled separately by Trello via the icon property
 
         // Just the status text with first letter capitalized
         return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
@@ -144,7 +128,7 @@ window.TrelloApprovalBadges = {
         options = options || {};
         var useIcons = options.useIcons !== false; // Default to true
         var useTextOnly = options.useTextOnly || false;
-        var iconType = options.iconType || 'local'; // 'simple' or 'local'
+        var iconType = options.iconType || 'local'; // Always 'local'
         var isDarkMode = options.theme === 'dark';
 
         // Return empty array if no approval data
@@ -204,7 +188,7 @@ window.TrelloApprovalBadges = {
             return TrelloApprovalBadges.generateCardBadges(approvalData, {
                 useIcons: true,        // Set to false to disable icons
                 useTextOnly: false,    // Set to true for text-only badges
-                iconType: 'local',     // 'simple' or 'local'
+                iconType: 'local',     // Always 'local'
                 monochrome: true       // Set to false for colorful icons
             });
         })
