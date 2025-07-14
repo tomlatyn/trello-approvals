@@ -17,20 +17,24 @@ TrelloPowerUp.initialize({
           content: {
             type: 'iframe',
             url: t.signUrl('./approval-section.html')
-            // No height specified = auto height
-            // No resize: false = allows resizing
-          }
-        };
-        
-        // Add "Reset all" action only if user is the creator
-        if (isCreator) {
-          result.action = {
+          },
+          action: {
             text: 'Reset all',
             callback: function(t) {
               return resetAllApprovals(t);
             }
-          };
-        }
+          }
+        };
+        
+        // Add "Reset all" action only if user is the creator
+        // if (isCreator) {
+        //   result.action = {
+        //     text: 'Reset all',
+        //     callback: function(t) {
+        //       return resetAllApprovals(t);
+        //     }
+        //   };
+        // }
         
         return result;
       });
@@ -49,9 +53,7 @@ TrelloPowerUp.initialize({
       callback: function(t) {
         return t.popup({
           title: 'Manage Approvals',
-          url: './manage-approvals.html',
-          height: 600,
-          width: 400
+          url: './manage-approvals.html'
         });
       }
     }];

@@ -32,7 +32,7 @@ body.dark-mode {
     text-align: center;
     padding: 20px;
     color: var(--ds-text-subtle, #6b778c);
-    font-size: 13px;
+    font-size: 10px;
     background-color: var(--ds-surface, white);
 }
 
@@ -74,7 +74,7 @@ body.dark-mode .loading {
 .approval-container {
     background-color: #FFFFFF;
     overflow: hidden;
-    padding: 16pt 0 4pt 0;
+    padding: 16px 0 4px 0;
 }
 
 body.dark-mode .approval-container {
@@ -103,7 +103,7 @@ body.dark-mode .approval-header {
 .approval-member {
     display: flex;
     align-items: center;
-    padding: 10pt;
+    padding: 10px;
     position: relative;
 }
 
@@ -111,12 +111,12 @@ body.dark-mode .approval-header {
 .approval-member::after {
     content: '';
     position: absolute;
-    bottom: -5pt;
+    bottom: -5px;
     left: 0;
     right: 0;
-    height: 1pt;
+    height: 1px;
     background-color: #DDDFE5;
-    margin: 5pt 0;
+    margin: 5px 0;
 }
 
 
@@ -128,9 +128,8 @@ body.dark-mode .approval-member::after {
 .member-item {
     display: flex;
     align-items: center;
-    height: 48pt;
     max-width: 100%;
-    padding: 0 12pt;
+    padding: 10px;
     cursor: pointer;
     transition: background-color 0.1s ease;
     position: relative;
@@ -156,12 +155,12 @@ body.dark-mode .member-item.selected {
 .member-item:not(:last-child)::after {
     content: '';
     position: absolute;
-    bottom: -5pt;
+    bottom: -5px;
     left: 0;
     right: 0;
-    height: 1pt;
+    height: 1px;
     background-color: #DDDFE5;
-    margin: 5pt 0;
+    margin: 5px 0;
 }
 
 body.dark-mode .member-item:not(:last-child)::after {
@@ -175,15 +174,15 @@ body.dark-mode .member-item:not(:last-child)::after {
     align-items: center;
     min-width: 0;
     flex: 1;
-    margin-right: 16pt;
+    margin-right: 12px;
 }
 
 /* Avatar Styles */
 .avatar {
-    width: 28pt;
-    height: 28pt;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    margin-right: 12pt;
+    margin-right: 12px;
     flex-shrink: 0;
     overflow: hidden;
     background: linear-gradient(45deg, #0366d6, #0256cc);
@@ -199,12 +198,12 @@ body.dark-mode .member-item:not(:last-child)::after {
 
 /* Avatar for manage-approvals (new sizing) */
 .member-item .avatar {
-    width: 28pt;
-    height: 28pt;
+    width: 32px;
+    height: 32px;
     background: linear-gradient(45deg, #0079bf, #026aa7);
     font-size: 12px;
     box-shadow: 0 1px 1px rgba(9, 30, 66, 0.25);
-    margin-right: 12pt;
+    margin-right: 12px;
     flex-shrink: 0;
 }
 
@@ -218,7 +217,7 @@ body.dark-mode .member-item:not(:last-child)::after {
 .member-name {
     font-weight: 600;
     color: #44546F;
-    font-size: 12pt;
+    font-size: 14px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -229,7 +228,7 @@ body.dark-mode .member-item:not(:last-child)::after {
 /* Member name for manage-approvals */
 .member-item .member-name {
     color: #44546F;
-    font-size: 12pt;
+    font-size: 14px;
     font-weight: 600;
     flex: 1;
     white-space: nowrap;
@@ -255,8 +254,8 @@ body.dark-mode .member-item .member-name {
 
 /* Checkmark for selected members */
 .member-checkmark {
-    width: 24pt;
-    height: 24pt;
+    width: 24px;
+    height: 24px;
     margin-left: auto;
     flex-shrink: 0;
     /* Color matches member name: #44546F */
@@ -281,9 +280,9 @@ body.dark-mode .member-username {
 
 
 .approval-status {
-    padding: 4pt;
-    border-radius: 4pt;
-    font-size: 10pt;
+    padding: 4px;
+    border-radius: 4px;
+    font-size: 12px;
     font-weight: 500;
     text-transform: capitalize;
     letter-spacing: 0.3px;
@@ -324,16 +323,16 @@ body.dark-mode .status-rejected {
 
 /* Status Banner */
 .status-banner {
-    height: 34pt;
     max-width: 100%;
-    border-radius: 4pt;
-    font-size: 12pt;
+    border-radius: 4px;
+    font-size: 12px;
     font-weight: 500;
     text-align: center;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-top: 8px;
+    padding: 10px;
 }
 
 .banner-pending {
@@ -370,14 +369,14 @@ body.dark-mode .banner-rejected {
 /* Action Buttons */
 .action-buttons {
     display: flex;
-    gap: 8pt;
+    gap: 8px;
     opacity: 1;
     flex-shrink: 0;
     justify-content: flex-end;
 }
 
 .action-buttons:not(:empty) {
-    margin-left: 16pt;
+    margin-left: 16px;
 }
 
 /* Current user row styling */
@@ -394,7 +393,7 @@ body.dark-mode .approval-member.current-user {
     margin-top: 0;
     margin-left: -16px;
     margin-right: -16px;
-    gap: 8pt;
+    gap: 8px;
     padding: 0 16px;
     opacity: 1;
     display: flex;
@@ -404,18 +403,18 @@ body.dark-mode .approval-member.current-user {
 
 
 .action-btn {
-    padding: 4pt;
+    padding: 4px;
     border: none;
-    border-radius: 4pt;
+    border-radius: 4px;
     cursor: pointer;
-    font-size: 10pt;
+    font-size: 12px;
     font-weight: 500;
     transition: all 0.1s ease;
     background-color: #F6F6F7;
     color: #182A4E;
     display: flex;
     align-items: center;
-    gap: 4pt;
+    gap: 4px;
     box-sizing: border-box;
 }
 
@@ -451,23 +450,25 @@ body.dark-mode .reset-btn:hover {
 /* Button icons */
 .btn-icon {
     flex-shrink: 0;
-    /* Color matches text: #182A4E */
+    width: 16px !important;
+    height: 16px !important;
+    /* Same color in light and dark mode: #182A4E */
     filter: brightness(0) saturate(100%) invert(14%) sepia(40%) saturate(1358%) hue-rotate(203deg) brightness(93%) contrast(98%);
 }
 
 body.dark-mode .btn-icon {
-    /* Color matches text in dark mode: #B6C2CF */
-    filter: brightness(0) saturate(100%) invert(80%) sepia(23%) saturate(1058%) hue-rotate(169deg) brightness(103%) contrast(101%);
+    /* Same color in both modes */
+    filter: brightness(0) saturate(100%) invert(14%) sepia(40%) saturate(1358%) hue-rotate(203deg) brightness(93%) contrast(98%);
 }
 
 /* New Button Styles - General button template */
 .btn-primary, .btn-secondary, .btn-create {
     border: none;
-    border-radius: 4pt;
+    border-radius: 4px;
     cursor: pointer;
-    font-size: 12pt;
+    font-size: 12px;
     font-weight: 500;
-    height: 34pt;
+    padding: 10px;
     transition: all 0.1s ease;
     width: 100%;
     text-align: center;
@@ -558,7 +559,7 @@ body.dark-mode .btn-primary:disabled {
 
 /* First member row spacing */
 .member-item:first-child {
-    margin-top: 2pt;
+    margin-top: 2px;
 }
 
 /* Empty States */
@@ -567,7 +568,7 @@ body.dark-mode .btn-primary:disabled {
     padding: 20px;
     color: var(--ds-text-subtle, #6b778c);
     font-style: italic;
-    font-size: 13px;
+    font-size: 10px;
     background-color: var(--ds-surface, white);
 }
 
@@ -575,7 +576,7 @@ body.dark-mode .btn-primary:disabled {
     text-align: center;
     padding: 20px;
     color: #ef4444;
-    font-size: 13px;
+    font-size: 10px;
     background-color: var(--ds-surface, white);
 }
 
@@ -633,7 +634,7 @@ body.dark-mode #error.error {
     }
     
     .member-name {
-        font-size: 13px;
+        font-size: 10px;
     }
     
     .status-section {
@@ -647,22 +648,22 @@ body.dark-mode #error.error {
 
 /* Manage-approvals specific body styles */
 body.manage-approvals {
-    padding: 16px;
+    padding: 0;
     background-color: var(--ds-surface, #ffffff);
     height: 100vh;
 }
 
 /* Content padding update */
 body.manage-approvals .content {
-    padding-top: 16pt;
-    height: calc(100vh - 32px);
+    padding: 0;
+    height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
 /* Persons section styling */
 .persons-section {
-    margin-bottom: 16pt;
+    margin-bottom: 16px;
     flex: 1;
     min-height: 0;
     display: flex;
@@ -672,8 +673,8 @@ body.manage-approvals .content {
 /* Members container with background (includes header and list) */
 .members-container {
     background-color: #F8F8F8;
-    border-radius: 5pt;
-    padding: 16pt 12pt;
+    border-radius: 5px;
+    padding: 16px 12px;
     flex: 1;
     min-height: 0;
     display: flex;
@@ -696,17 +697,17 @@ body.dark-mode .members-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2pt;
+    margin-bottom: 2px;
 }
 
 .approvers-label {
-    font-size: 10pt;
+    font-size: 10px;
     color: #5E6C84;
     font-weight: 500;
 }
 
 .selected-count {
-    font-size: 10pt;
+    font-size: 10px;
     color: #5E6C84;
     font-weight: 500;
 }
@@ -718,5 +719,5 @@ body.dark-mode .selected-count {
 }
 
 body.dark-mode.manage-approvals {
-    background-color: #1d2125 !important;
+    background-color: #282E32 !important;
 }
