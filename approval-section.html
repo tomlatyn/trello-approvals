@@ -6,23 +6,25 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div id="loading" class="loading">
-        <div class="spinner"></div>
-        <p>Loading approvals...</p>
-    </div>
-    
-    <div id="approval-container" class="approval-container hidden">
-        <div id="approvals-list"></div>
-    </div>
-    
-    <div id="status-banner-container"></div>
-    
-    <div id="no-approvals" class="no-approvals hidden">
-        No approvals have been created for this card yet.
-    </div>
-    
-    <div id="error" class="error hidden">
-        Unable to load approval status.
+    <div class="view-wrapper">
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading approvals...</p>
+        </div>
+        
+        <div id="approval-container" class="approval-container hidden">
+            <div id="approvals-list"></div>
+        </div>
+        
+        <div id="status-banner-container"></div>
+        
+        <div id="no-approvals" class="no-approvals hidden">
+            No approvals have been created for this card yet.
+        </div>
+        
+        <div id="error" class="error hidden">
+            Unable to load approval status.
+        </div>
     </div>
     
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
