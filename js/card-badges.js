@@ -12,9 +12,9 @@ window.TrelloApprovalBadges = {
 
     // Local file icons (relative to your Power-Up's hosted location)
     ICONS: {
-        pending: 'icons/pending.svg',     // Local path to pending icon
-        approved: 'icons/check.svg',   // Local path to approved icon
-        rejected: 'icons/cross.svg'    // Local path to rejected icon
+        pending: 'icons/status-pending.svg',     // Local path to pending status icon
+        approved: 'icons/status-approved.svg',   // Local path to approved status icon
+        rejected: 'icons/status-rejected.svg'    // Local path to rejected status icon
     },
 
     /**
