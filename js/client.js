@@ -28,8 +28,16 @@ TrelloPowerUp.initialize({
               return resetAllApprovals(t)
                 .then(function() {
                   console.log('🔄 Reset completed, forcing refresh...');
-                  // Force a complete refresh of the card back section
-                  return t.closeBoard();
+                  // Send a message to the iframe to refresh itself
+                  try {
+                    var iframe = document.querySelector('iframe[src*="approval-section.html"]');
+                    if (iframe && iframe.contentWindow) {
+                      iframe.contentWindow.location.reload();
+                    }
+                  } catch (e) {
+                    console.log('Could not refresh iframe directly:', e);
+                  }
+                  return Promise.resolve();
                 })
                 .catch(function(error) {
                   console.error('❌ Reset failed:', error);
