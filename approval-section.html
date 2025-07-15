@@ -419,14 +419,6 @@
             loadApprovals();
         }
         
-        // Listen for messages to reload data
-        window.addEventListener('message', function(event) {
-            if (event.data && event.data.type === 'APPROVAL_DATA_CHANGED') {
-                console.log('📨 Received approval data change message, reloading...');
-                loadApprovals();
-            }
-        });
-        
         // Wait a bit for all scripts to load
         setTimeout(initialize, 100);
     </script>

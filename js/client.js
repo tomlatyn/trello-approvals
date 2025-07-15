@@ -24,12 +24,11 @@ TrelloPowerUp.initialize({
           result.action = {
             text: 'Reset all',
             callback: function(t) {
-              console.log('🎯 Reset all button clicked!');
-              return resetAllApprovals(t)
-                .catch(function(error) {
-                  console.error('❌ Reset failed:', error);
-                  return Promise.resolve();
-                });
+              return t.popup({
+                title: 'Reset All Approvals',
+                url: './reset-confirmation.html',
+                height: 200
+              });
             }
           };
         }
