@@ -12,7 +12,7 @@ TrelloPowerUp.initialize({
         var isCreator = (approvalData.createdBy === currentUserId);
         
         var result = {
-          title: 'Approvals',
+          title: 'Approvals SM',
           icon: './icon.png',
           content: {
             type: 'iframe',
@@ -43,12 +43,12 @@ TrelloPowerUp.initialize({
   'card-buttons': function(t, opts) {
     return [{
       icon: './icon.png',
-      text: 'Approvals',
+      text: 'Approvals SM',
       callback: function(t) {
         return t.popup({
           title: 'Manage Approvals',
           url: './manage-approvals.html',
-          height: 800
+          height: 700
         });
       }
     }];
