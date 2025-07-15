@@ -9,12 +9,7 @@ TrelloPowerUp.initialize({
       
       // Check if current user is the creator
       return t.member('id').then(function(currentUserId) {
-        console.log('Current user ID:', currentUserId);
-        console.log('Current user ID id:', currentUserId.id);
-        console.log('Approval data createdBy:', approvalData.createdBy);
-        var actualUserId = currentUserId.id;
-        var isCreator = (approvalData.createdBy === actualUserId);
-        console.log('isCreator:', isCreator);
+        var isCreator = (approvalData.createdBy === currentUserId.id);
         
         var result = {
           title: 'Approvals SM',
@@ -24,19 +19,24 @@ TrelloPowerUp.initialize({
             url: t.signUrl('./approval-section.html')
           }
         };
-        
-        console.log('About to check isCreator for reset button...');
-        // Add "Reset all" action only if user is the creator
+
         if (isCreator) {
-          console.log('Adding reset all action!');
           result.action = {
             text: 'Reset all',
             callback: function(t) {
-              return resetAllApprovals(t);
+              console.log('🎯 Reset all button clicked!');
+              return resetAllApprovals(t)
+                .then(function() {
+                  console.log('🔄 Reset completed, forcing refresh...');
+                  // Force a complete refresh of the card back section
+                  return t.closeBoard();
+                })
+                .catch(function(error) {
+                  console.error('❌ Reset failed:', error);
+                  return Promise.resolve();
+                });
             }
           };
-        } else {
-          console.log('NOT adding reset all action - user is not creator');
         }
         
         console.log('Final result object:', result);
@@ -72,30 +72,33 @@ TrelloPowerUp.initialize({
 
 // Function to reset all approvals to pending status
 function resetAllApprovals(t) {
+  console.log('🔄 Reset all approvals function called!');
   return t.get('card', 'shared', 'approvals', null)
   .then(function(approvalData) {
+    console.log('📄 Got approval data:', approvalData);
     if (!approvalData || !approvalData.members) {
+      console.log('❌ No approval data or members found');
       return;
     }
     
+    console.log('🔄 Resetting statuses for', Object.keys(approvalData.members).length, 'members');
     // Reset all members to pending status
     Object.keys(approvalData.members).forEach(function(memberId) {
+      console.log('Resetting member:', memberId, 'from', approvalData.members[memberId].status, 'to pending');
       approvalData.members[memberId].status = 'pending';
       approvalData.members[memberId].actionDate = new Date().toISOString();
     });
     
+    console.log('💾 Saving updated approval data...');
     // Save the updated data
     return t.set('card', 'shared', 'approvals', approvalData);
   })
   .then(function() {
-    // Force refresh of the iframe content by reloading the card back section
-    return t.card('all').then(function() {
-      // Close any open popup and let Trello refresh the card back section
-      return t.closePopup();
-    });
+    console.log('✅ Data saved successfully!');
+    return Promise.resolve();
   })
   .catch(function(error) {
-    console.error('Error resetting approvals:', error);
+    console.error('❌ Error resetting approvals:', error);
     alert('Failed to reset approvals. Please try again.');
     return Promise.resolve();
   });
