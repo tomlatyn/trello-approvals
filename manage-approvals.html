@@ -306,12 +306,13 @@
                 };
             });
             
-            // Get current member and save using the new API wrapper
-            TrelloMockUtils.api.getCurrentMember()
+            // Get current member and save data directly
+            t.member('id')
             .then(function(currentMember) {
                 approvalData.createdBy = existingApprovals ? existingApprovals.createdBy : currentMember.id;
                 
-                return TrelloMockUtils.api.saveApprovalData(approvalData);
+                // Save approval data directly to Trello
+                return t.set('card', 'shared', 'approvals', approvalData);
             })
             .then(function() {
                 console.log('Approvals saved successfully');
@@ -333,8 +334,8 @@
                 return;
             }
             
-            // Delete using the new API wrapper
-            TrelloMockUtils.api.deleteApprovalData()
+            // Delete approval data directly from Trello
+            t.remove('card', 'shared', 'approvals')
             .then(function() {
                 console.log('Approvals deleted successfully');
                 // Notify parent that we're done, this will trigger the callback
