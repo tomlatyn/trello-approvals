@@ -316,6 +316,10 @@
                 // Notify parent that we're done, this will trigger the callback
                 return t.notifyParent('done');
             })
+            .then(function() {
+                // Close the popup after notifying parent
+                return t.closePopup();
+            })
             .catch(function(error) {
                 console.error('Error saving approvals:', error);
                 alert('Failed to save approvals. Please try again.');
@@ -333,6 +337,10 @@
                 console.log('Approvals deleted successfully');
                 // Notify parent that we're done, this will trigger the callback
                 return t.notifyParent('done');
+            })
+            .then(function() {
+                // Close the popup after notifying parent
+                return t.closePopup();
             })
             .catch(function(error) {
                 console.error('Error deleting approvals:', error);
