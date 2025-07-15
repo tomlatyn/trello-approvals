@@ -90,8 +90,16 @@ function resetAllApprovals(t) {
   })
   .then(function() {
     console.log('✅ Data saved successfully!');
-    // Trigger refresh by notifying Trello that card data has changed
-    return t.card('all');
+    // Post message to the iframe to trigger a reload
+    try {
+      var iframe = parent.document.querySelector('iframe[src*="approval-section.html"]');
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.postMessage({type: 'APPROVAL_DATA_CHANGED'}, '*');
+      }
+    } catch (e) {
+      console.log('Could not send message to iframe:', e);
+    }
+    return Promise.resolve();
   })
   .catch(function(error) {
     console.error('❌ Error resetting approvals:', error);
