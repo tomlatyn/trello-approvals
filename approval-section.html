@@ -418,15 +418,6 @@
             applyTheme();
             loadApprovals();
         }
-
-        // Also listen for Trello broadcast events
-        t.subscribe(function(event) {
-            console.log('📡 Received Trello event:', event);
-            if (event === 'APPROVAL_DATA_CHANGED') {
-                console.log('📨 Received approval data change broadcast, reloading...');
-                loadApprovals();
-            }
-        });
         
         // Listen for messages to reload data
         window.addEventListener('message', function(event) {
