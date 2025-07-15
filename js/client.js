@@ -97,12 +97,18 @@ function resetAllApprovals(t) {
     console.log('✅ Data saved successfully!');
     // Post message to the iframe to trigger a reload
     try {
+      console.log('🔍 Looking for iframe...');
       var iframe = parent.document.querySelector('iframe[src*="approval-section.html"]');
+      console.log('🔍 Found iframe:', iframe);
       if (iframe && iframe.contentWindow) {
+        console.log('📤 Sending message to iframe...');
         iframe.contentWindow.postMessage({type: 'APPROVAL_DATA_CHANGED'}, '*');
+        console.log('📤 Message sent!');
+      } else {
+        console.log('❌ No iframe found or no contentWindow');
       }
     } catch (e) {
-      console.log('Could not send message to iframe:', e);
+      console.log('❌ Could not send message to iframe:', e);
     }
     return Promise.resolve();
   })
