@@ -10,8 +10,9 @@ TrelloPowerUp.initialize({
       // Check if current user is the creator
       return t.member('id').then(function(currentUserId) {
         console.log('Current user ID:', currentUserId);
+        console.log('Current user ID id:', currentUserId.id);
         console.log('Approval data createdBy:', approvalData.createdBy);
-        var actualUserId = currentUserId.id || currentUserId;
+        var actualUserId = currentUserId.id;
         var isCreator = (approvalData.createdBy === actualUserId);
         console.log('isCreator:', isCreator);
         
