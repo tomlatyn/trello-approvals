@@ -26,19 +26,6 @@ TrelloPowerUp.initialize({
             callback: function(t) {
               console.log('🎯 Reset all button clicked!');
               return resetAllApprovals(t)
-                .then(function() {
-                  console.log('🔄 Reset completed, forcing refresh...');
-                  // Send a message to the iframe to refresh itself
-                  try {
-                    var iframe = document.querySelector('iframe[src*="approval-section.html"]');
-                    if (iframe && iframe.contentWindow) {
-                      iframe.contentWindow.location.reload();
-                    }
-                  } catch (e) {
-                    console.log('Could not refresh iframe directly:', e);
-                  }
-                  return Promise.resolve();
-                })
                 .catch(function(error) {
                   console.error('❌ Reset failed:', error);
                   return Promise.resolve();
@@ -103,7 +90,8 @@ function resetAllApprovals(t) {
   })
   .then(function() {
     console.log('✅ Data saved successfully!');
-    return Promise.resolve();
+    // Trigger refresh by notifying Trello that card data has changed
+    return t.card('all');
   })
   .catch(function(error) {
     console.error('❌ Error resetting approvals:', error);
