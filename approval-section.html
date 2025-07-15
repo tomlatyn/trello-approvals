@@ -127,7 +127,7 @@
         function loadApprovals() {
             showLoading();
             
-            console.log('🔍 Loading approvals...');
+            console.log('🔍 Loading approvals at', new Date().toISOString());
             console.log('🔍 Mock mode:', TrelloMockUtils.isMockMode());
             
             // Use the new API wrapper that automatically handles mock vs real data

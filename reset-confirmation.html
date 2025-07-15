@@ -76,7 +76,21 @@
             })
             .then(function() {
                 console.log('✅ Data saved successfully!');
-                return TrelloMockUtils.api.closePopup();
+                console.log('🔄 Closing popup...');
+                
+                // Close popup and try to signal parent
+                if (TrelloMockUtils.isMockMode()) {
+                    alert('✅ Approvals reset successfully! (Mock mode)');
+                    return TrelloMockUtils.api.closePopup();
+                } else {
+                    // Try to refresh the parent card
+                    try {
+                        window.parent.location.reload();
+                    } catch (e) {
+                        console.log('Could not reload parent, trying closePopup');
+                    }
+                    return t.closePopup();
+                }
             })
             .catch(function(error) {
                 console.error('❌ Error resetting approvals:', error);
