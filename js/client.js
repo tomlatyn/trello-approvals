@@ -95,22 +95,12 @@ function resetAllApprovals(t) {
   })
   .then(function() {
     console.log('✅ Data saved successfully!');
-    // Post message to the iframe to trigger a reload
-    try {
-      console.log('🔍 Looking for iframe...');
-      var iframe = parent.document.querySelector('iframe[src*="approval-section.html"]');
-      console.log('🔍 Found iframe:', iframe);
-      if (iframe && iframe.contentWindow) {
-        console.log('📤 Sending message to iframe...');
-        iframe.contentWindow.postMessage({type: 'APPROVAL_DATA_CHANGED'}, '*');
-        console.log('📤 Message sent!');
-      } else {
-        console.log('❌ No iframe found or no contentWindow');
-      }
-    } catch (e) {
-      console.log('❌ Could not send message to iframe:', e);
-    }
-    return Promise.resolve();
+    // Force refresh by simulating a popup close which triggers Trello's refresh
+    return t.popup({
+      title: 'Reset Complete',
+      url: 'data:text/html,<script>window.close();</script>',
+      height: 1
+    });
   })
   .catch(function(error) {
     console.error('❌ Error resetting approvals:', error);
