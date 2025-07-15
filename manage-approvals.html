@@ -313,7 +313,8 @@
             })
             .then(function() {
                 console.log('Approvals saved successfully');
-                return TrelloMockUtils.api.closePopup();
+                // Notify parent that we're done, this will trigger the callback
+                return t.notifyParent('done');
             })
             .catch(function(error) {
                 console.error('Error saving approvals:', error);
@@ -330,7 +331,8 @@
             TrelloMockUtils.api.deleteApprovalData()
             .then(function() {
                 console.log('Approvals deleted successfully');
-                return TrelloMockUtils.api.closePopup();
+                // Notify parent that we're done, this will trigger the callback
+                return t.notifyParent('done');
             })
             .catch(function(error) {
                 console.error('Error deleting approvals:', error);

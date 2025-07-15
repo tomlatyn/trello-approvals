@@ -52,7 +52,13 @@ TrelloPowerUp.initialize({
         return t.popup({
           title: 'Manage Approvals',
           url: './manage-approvals.html',
-          height: 700
+          height: 700,
+          callback: function(t, opts) {
+            // This callback runs when t.notifyParent('done') is called from the popup
+            // Card-back-section will automatically refresh due to data changes from t.set()
+            console.log('Manage approvals popup completed, card-back-section should refresh automatically');
+            return Promise.resolve();
+          }
         });
       }
     }];
@@ -94,12 +100,8 @@ function resetAllApprovals(t) {
   })
   .then(function() {
     console.log('✅ Data saved successfully!');
-    // Force refresh by simulating a popup close which triggers Trello's refresh
-    return t.popup({
-      title: 'Reset Complete',
-      url: 'data:text/html,<script>window.close();</script>',
-      height: 1
-    });
+    // Data change via t.set() will automatically refresh the card-back-section
+    return Promise.resolve();
   })
   .catch(function(error) {
     console.error('❌ Error resetting approvals:', error);
