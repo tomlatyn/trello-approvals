@@ -10,8 +10,6 @@ window.TrelloApprovalBadges = {
         rejected: 'red'        // Red for rejected status
     },
 
-
-
     // Local file icons (relative to your Power-Up's hosted location)
     LOCAL_ICONS: {
         pending: './icons/status-pending.svg',     // Local path to pending status icon
