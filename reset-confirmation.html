@@ -83,12 +83,7 @@
                     alert('✅ Approvals reset successfully! (Mock mode)');
                     return TrelloMockUtils.api.closePopup();
                 } else {
-                    // Try to refresh the parent card
-                    try {
-                        window.parent.location.reload();
-                    } catch (e) {
-                        console.log('Could not reload parent, trying closePopup');
-                    }
+                    // Close popup - the card will auto-refresh due to data changes via t.set()
                     return t.closePopup();
                 }
             })

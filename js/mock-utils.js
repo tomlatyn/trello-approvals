@@ -106,7 +106,8 @@ window.TrelloMockUtils = {
                 TrelloMockData.existingApprovals = data;
                 return Promise.resolve();
             }
-            return window.TrelloPowerUp.iframe().set('card', 'shared', 'approvals', data);
+            var t = window.TrelloPowerUp.iframe();
+            return t.set('card', 'shared', 'approvals', data);
         },
 
         // Delete approval data from card
@@ -116,7 +117,8 @@ window.TrelloMockUtils = {
                 TrelloMockData.existingApprovals = null;
                 return Promise.resolve();
             }
-            return window.TrelloPowerUp.iframe().remove('card', 'shared', 'approvals');
+            var t = window.TrelloPowerUp.iframe();
+            return t.remove('card', 'shared', 'approvals');
         },
 
         // Get board members

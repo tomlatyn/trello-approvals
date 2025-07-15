@@ -1,3 +1,6 @@
+// Use Trello's provided Bluebird Promise for better browser compatibility
+var Promise = window.TrelloPowerUp.Promise;
+
 TrelloPowerUp.initialize({
   // Card back section - shows approval table in the card details
   'card-back-section': function(t, opts) {
@@ -55,8 +58,8 @@ TrelloPowerUp.initialize({
           height: 700,
           callback: function(t, opts) {
             // This callback runs when t.notifyParent('done') is called from the popup
-            // Card-back-section will automatically refresh due to data changes from t.set()
-            console.log('Manage approvals popup completed, card-back-section should refresh automatically');
+            // Card-back-section iframe will automatically reload due to t.set() changing pluginData
+            console.log('Manage approvals popup completed, card-back-section will auto-refresh');
             return Promise.resolve();
           }
         });
