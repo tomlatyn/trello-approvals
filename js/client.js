@@ -12,6 +12,7 @@ TrelloPowerUp.initialize({
         console.log('Current user ID:', currentUserId);
         console.log('Approval data createdBy:', approvalData.createdBy);
         var isCreator = (approvalData.createdBy === currentUserId);
+        console.log('isCreator:', isCreator);
         
         var result = {
           title: 'Approvals SM',
@@ -22,16 +23,21 @@ TrelloPowerUp.initialize({
           }
         };
         
+        console.log('About to check isCreator for reset button...');
         // Add "Reset all" action only if user is the creator
         if (isCreator) {
+          console.log('Adding reset all action!');
           result.action = {
             text: 'Reset all',
             callback: function(t) {
               return resetAllApprovals(t);
             }
           };
+        } else {
+          console.log('NOT adding reset all action - user is not creator');
         }
         
+        console.log('Final result object:', result);
         return result;
       });
     })
