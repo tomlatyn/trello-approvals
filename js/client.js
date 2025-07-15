@@ -68,6 +68,11 @@ TrelloPowerUp.initialize({
 // Function to reset all approvals to pending status
 function resetAllApprovals(t) {
   console.log('🔄 Reset all approvals function called!');
+  
+  if (!confirm('Are you sure you want to reset all approvals to pending status?')) {
+    return Promise.resolve();
+  }
+  
   return t.get('card', 'shared', 'approvals', null)
   .then(function(approvalData) {
     console.log('📄 Got approval data:', approvalData);
