@@ -26,6 +26,10 @@ TrelloPowerUp.initialize({
             callback: function(t) {
               console.log('🎯 Reset all button clicked!');
               return resetAllApprovals(t)
+                .then(function() {
+                  // After resetting, notify the iframe to refresh
+                  notifyIframeToRefresh(t);
+                })
                 .catch(function(error) {
                   console.error('❌ Reset failed:', error);
                   return Promise.resolve();
@@ -65,6 +69,27 @@ TrelloPowerUp.initialize({
   },
 });
 
+// Function to notify iframe to refresh its content
+function notifyIframeToRefresh(t) {
+  // Method 1: Try to find and post message to the iframe
+  try {
+    var iframes = document.querySelectorAll('iframe');
+    iframes.forEach(function(iframe) {
+      // Check if this is our approval section iframe
+      if (iframe.src && iframe.src.includes('approval-section.html')) {
+        console.log('📨 Sending refresh message to iframe');
+        iframe.contentWindow.postMessage({ type: 'APPROVAL_DATA_CHANGED' }, '*');
+      }
+    });
+  } catch (error) {
+    console.log('Could not post message to iframe:', error);
+  }
+  
+  // Method 2: Use Trello's broadcast mechanism
+  // This will work even if we can't directly access the iframe
+  t.broadcast('APPROVAL_DATA_CHANGED');
+}
+
 // Function to reset all approvals to pending status
 function resetAllApprovals(t) {
   console.log('🔄 Reset all approvals function called!');
@@ -95,16 +120,11 @@ function resetAllApprovals(t) {
   })
   .then(function() {
     console.log('✅ Data saved successfully!');
-    // Force refresh by simulating a popup close which triggers Trello's refresh
-    return t.popup({
-      title: 'Reset Complete',
-      url: 'data:text/html,<script>window.close();</script>',
-      height: 1
-    });
+    return Promise.resolve();
   })
   .catch(function(error) {
     console.error('❌ Error resetting approvals:', error);
     alert('Failed to reset approvals. Please try again.');
-    return Promise.resolve();
+    throw error; // Re-throw to prevent the refresh notification
   });
 }
