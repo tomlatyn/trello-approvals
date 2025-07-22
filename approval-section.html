@@ -7,7 +7,7 @@
 </head>
 <body>
     <div class="view-wrapper">
-        <div id="loading" class="loading">
+        <div id="loading" class="loading hidden">
             <div class="spinner"></div>
             <p>Loading approvals...</p>
         </div>
@@ -28,8 +28,397 @@
     </div>
     
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
-    <script src="js/mock-data.js"></script>
-    <script src="js/mock-utils.js"></script>
-    <script src="js/approval-section.js"></script>
+    <script>
+        var t = TrelloPowerUp.iframe();
+        var currentUserId = null;
+        var approvalData = null;
+        
+        // Apply theme on page load
+        function applyTheme() {
+            try {
+                var context = t.getContext();
+                var theme = context ? (context.theme || context.initialTheme || 'light') : 'light';
+                
+                if (theme === 'dark') {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+                
+                console.log('Applied theme:', theme);
+            } catch (error) {
+                console.log('Theme context not available, using light theme:', error.message);
+                document.body.classList.remove('dark-mode');
+            }
+        }
+        
+        // Subscribe to theme changes
+        var unsubscribeTheme = null;
+        try {
+            unsubscribeTheme = t.subscribeToThemeChanges(function(theme) {
+                console.log('Theme changed to:', theme);
+                if (theme === 'dark') {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+            });
+        } catch (error) {
+            console.log('Theme subscription not available:', error.message);
+        }
+
+        function showApprovals() {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('approval-container').classList.remove('hidden');
+            document.getElementById('no-approvals').classList.add('hidden');
+            document.getElementById('error').classList.add('hidden');
+            resizeToContent();
+        }
+        
+        function showNoApprovals() {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('approval-container').classList.add('hidden');
+            document.getElementById('status-banner-container').innerHTML = '';
+            document.getElementById('no-approvals').classList.remove('hidden');
+            document.getElementById('error').classList.add('hidden');
+            resizeToContent();
+        }
+        
+        function showError() {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('approval-container').classList.add('hidden');
+            document.getElementById('status-banner-container').innerHTML = '';
+            document.getElementById('no-approvals').classList.add('hidden');
+            document.getElementById('error').classList.remove('hidden');
+        }
+        
+        function resizeToContent() {
+            setTimeout(function() {
+                var body = document.body;
+                var html = document.documentElement;
+                
+                var height = Math.max(
+                    body.scrollHeight,
+                    body.offsetHeight,
+                    html.clientHeight,
+                    html.scrollHeight,
+                    html.offsetHeight
+                );
+                
+                height += 20;
+                
+                t.sizeTo('body').catch(function(error) {
+                    console.log('Resize failed, trying alternative:', error);
+                    t.sizeTo('#approval-container');
+                });
+            }, 50);
+        }
+        
+        // Get data from URL parameters
+        function getDataFromURL() {
+            var urlParams = new URLSearchParams(window.location.search);
+            var dataParam = urlParams.get('data');
+            var userIdParam = urlParams.get('userId');
+            
+            if (!dataParam || !userIdParam) {
+                console.error('Missing required URL parameters');
+                return null;
+            }
+            
+            try {
+                var decodedData = decodeURIComponent(dataParam);
+                var parsedData = JSON.parse(decodedData);
+                var decodedUserId = decodeURIComponent(userIdParam);
+                
+                return {
+                    approvalData: parsedData,
+                    currentUserId: decodedUserId
+                };
+            } catch (error) {
+                console.error('Error parsing URL parameters:', error);
+                return null;
+            }
+        }
+        
+        function loadApprovals() {
+            console.log('🔍 Loading approvals at', new Date().toISOString());
+            
+            // Get data from URL parameters - no loading state needed since data is immediately available
+            var urlData = getDataFromURL();
+            
+            if (!urlData) {
+                console.error('❌ Failed to get data from URL parameters');
+                showError();
+                return;
+            }
+            
+            currentUserId = urlData.currentUserId;
+            approvalData = urlData.approvalData;
+            
+            console.log('📝 Current user ID:', currentUserId);
+            console.log('📝 Approval data:', approvalData);
+            
+            if (!approvalData || !approvalData.members || Object.keys(approvalData.members).length === 0) {
+                console.log('No approval data found');
+                showNoApprovals();
+            } else {
+                console.log('Displaying approvals for', Object.keys(approvalData.members).length, 'members');
+                displayApprovals();
+                showApprovals();
+            }
+        }
+        
+        function displayApprovals() {
+            var approvalsList = document.getElementById('approvals-list');
+            var statusBannerContainer = document.getElementById('status-banner-container');
+            
+            approvalsList.innerHTML = '';
+            statusBannerContainer.innerHTML = '';
+            
+            var members = Object.values(approvalData.members);
+            
+            // Sort members by name
+            members.sort(function(a, b) {
+                var nameA = (a.fullName || a.username || '').toLowerCase();
+                var nameB = (b.fullName || b.username || '').toLowerCase();
+                return nameA.localeCompare(nameB);
+            });
+            
+            // Display each member
+            members.forEach(function(member) {
+                var memberDiv = document.createElement('div');
+                memberDiv.className = 'approval-member';
+                
+                // Check if this is the current user
+                var isCurrentUser = (member.id === currentUserId);
+                
+                // Add current-user class if this is the current user
+                if (isCurrentUser) {
+                    memberDiv.classList.add('current-user');
+                }
+                
+                // First container: Icon and Name (50% width)
+                var leftContainer = document.createElement('div');
+                leftContainer.className = 'member-left-container';
+                
+                var avatar = document.createElement('div');
+                avatar.className = 'avatar';
+                
+                if (member.avatarUrl) {
+                    var img = document.createElement('img');
+                    img.src = member.avatarUrl;
+                    img.alt = member.fullName || member.username;
+                    img.onerror = function() {
+                        avatar.innerHTML = '';
+                        avatar.textContent = getInitials(member);
+                    };
+                    avatar.appendChild(img);
+                } else {
+                    avatar.textContent = getInitials(member);
+                }
+                
+                var name = document.createElement('div');
+                name.className = 'member-name';
+                name.textContent = member.fullName || member.username || 'Unknown Member';
+                
+                leftContainer.appendChild(avatar);
+                leftContainer.appendChild(name);
+                
+                // Second container: Status and Buttons (50% width with space-between)
+                var rightContainer = document.createElement('div');
+                rightContainer.className = 'member-right-container';
+                
+                var statusContainer = document.createElement('div');
+                statusContainer.className = 'status-container';
+                
+                var statusSpan = document.createElement('span');
+                statusSpan.className = 'approval-status status-' + member.status;
+                statusSpan.textContent = member.status;
+                
+                statusContainer.appendChild(statusSpan);
+                
+                // Action buttons section
+                var actionButtons = null;
+                if (isCurrentUser) {
+                    actionButtons = createActionButtons(member);
+                } else {
+                    // Create empty action buttons container to maintain layout
+                    actionButtons = document.createElement('div');
+                    actionButtons.className = 'action-buttons';
+                }
+                
+                rightContainer.appendChild(statusContainer);
+                rightContainer.appendChild(actionButtons);
+                
+                // Add both containers to member div
+                memberDiv.appendChild(leftContainer);
+                memberDiv.appendChild(rightContainer);
+                
+                approvalsList.appendChild(memberDiv);
+            });
+            
+            // Create status banner based on overall approval status
+            var overallStatus = calculateOverallStatus(members);
+            createStatusBanner(overallStatus);
+            
+            resizeToContent();
+        }
+        
+        function calculateOverallStatus(members) {
+            // Count each status type
+            var statusCounts = {
+                pending: 0,
+                approved: 0,
+                rejected: 0
+            };
+            
+            members.forEach(function(member) {
+                if (statusCounts.hasOwnProperty(member.status)) {
+                    statusCounts[member.status]++;
+                }
+            });
+            
+            console.log('Status counts:', statusCounts);
+            
+            // Apply the logic:
+            // 1. If there are any rejected -> "rejected"
+            // 2. If there are any pending and rest approved -> "pending"
+            // 3. If all are approved -> "approved"
+            
+            if (statusCounts.rejected > 0) {
+                return 'rejected';
+            } else if (statusCounts.pending > 0) {
+                return 'pending';
+            } else if (statusCounts.approved > 0) {
+                return 'approved';
+            } else {
+                // Fallback case (shouldn't happen with valid data)
+                return 'pending';
+            }
+        }
+        
+        function createActionButtons(member) {
+            var actionButtons = document.createElement('div');
+            actionButtons.className = 'action-buttons';
+            
+            if (member.status === 'approved') {
+                actionButtons.appendChild(createButton('Reject', 'reject-btn', function() {
+                    updateApprovalStatus(member.id, 'rejected');
+                }));
+                actionButtons.appendChild(createButton('Reset', 'reset-btn', function() {
+                    updateApprovalStatus(member.id, 'pending');
+                }));
+                
+            } else if (member.status === 'rejected') {
+                actionButtons.appendChild(createButton('Approve', 'approve-btn', function() {
+                    updateApprovalStatus(member.id, 'approved');
+                }));
+                actionButtons.appendChild(createButton('Reset', 'reset-btn', function() {
+                    updateApprovalStatus(member.id, 'pending');
+                }));
+                
+            } else { // pending
+                actionButtons.appendChild(createButton('Approve', 'approve-btn', function() {
+                    updateApprovalStatus(member.id, 'approved');
+                }));
+                actionButtons.appendChild(createButton('Reject', 'reject-btn', function() {
+                    updateApprovalStatus(member.id, 'rejected');
+                }));
+            }
+            
+            return actionButtons;
+        }
+        
+        function createButton(text, className, onClick) {
+            var button = document.createElement('button');
+            button.className = 'action-btn ' + className;
+            
+            // Add icons to approve and reject buttons
+            if (className.includes('approve-btn')) {
+                var icon = document.createElement('img');
+                icon.className = 'btn-icon';
+                icon.src = 'icons/button-approve.svg';
+                icon.alt = 'Approve';
+                icon.style.width = '16pt';
+                icon.style.height = '16pt';
+                button.appendChild(icon);
+            } else if (className.includes('reject-btn')) {
+                var icon = document.createElement('img');
+                icon.className = 'btn-icon';
+                icon.src = 'icons/button-reject.svg';
+                icon.alt = 'Reject';
+                icon.style.width = '16pt';
+                icon.style.height = '16pt';
+                button.appendChild(icon);
+            }
+            
+            var textSpan = document.createElement('span');
+            textSpan.textContent = text;
+            button.appendChild(textSpan);
+            
+            button.addEventListener('click', onClick);
+            return button;
+        }
+        
+        function updateApprovalStatus(memberId, status) {
+            console.log('Updating approval status for member:', memberId, 'to:', status);
+            
+            if (!approvalData || !approvalData.members || !approvalData.members[memberId]) {
+                console.error('Invalid approval data or member ID:', memberId);
+                console.log('Current approval data:', approvalData);
+                return;
+            }
+            
+            // Update the member's status
+            approvalData.members[memberId].status = status;
+            approvalData.members[memberId].actionDate = new Date().toISOString();
+            
+            console.log('Updated approval data:', approvalData);
+            
+            // Save updated data using direct Trello API
+            t.set('card', 'shared', 'approvals', approvalData)
+            .then(function() {
+                console.log('Approval status updated successfully');
+                // Refresh the display immediately
+                displayApprovals();
+            })
+            .catch(function(error) {
+                console.error('Error updating approval status:', error);
+                alert('Failed to update approval status. Please try again.');
+                
+                // On error, reload to get fresh data
+                loadApprovals();
+            });
+        }
+        
+        function createStatusBanner(status) {
+            var statusBannerContainer = document.getElementById('status-banner-container');
+            var banner = document.createElement('div');
+            banner.className = 'status-banner banner-' + status;
+            banner.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+            statusBannerContainer.appendChild(banner);
+        }
+        
+        function getInitials(member) {
+            if (member.fullName) {
+                var parts = member.fullName.split(' ');
+                return parts.length > 1 ? 
+                    parts[0].charAt(0).toUpperCase() + parts[parts.length-1].charAt(0).toUpperCase() :
+                    parts[0].charAt(0).toUpperCase();
+            } else if (member.username) {
+                return member.username.charAt(0).toUpperCase();
+            }
+            return '?';
+        }
+        
+        // Initialize theme and load approvals when section opens
+        function initialize() {
+            applyTheme();
+            loadApprovals(); // Load immediately without any loading state
+        }
+        
+        // Start immediately
+        initialize();
+    </script>
 </body>
 </html>

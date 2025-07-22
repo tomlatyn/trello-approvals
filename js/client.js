@@ -1,95 +1,80 @@
-
-const STORAGE_KEY = 'approvals';
-
 TrelloPowerUp.initialize({
-  // Card back section - shows approval table in iframe
-  'card-back-section': function(t) {
-    return t.get('card', 'shared', STORAGE_KEY)
-      .then(function(approvalData) {
-        if (!approvalData || !approvalData.members) {
-          return null; // Don't show section if no approvals
-        }
+  // Card back section - shows approval table in the card details
+  'card-back-section': function(t, opts) {
+    return t.get('card', 'shared', 'approvals', null)
+    .then(function(approvalData) {
+      if (!approvalData || !approvalData.members) {
+        return null;
+      }
+      
+      // Check if current user is the creator
+      return t.member('id').then(function(currentUserId) {
+        var isCreator = (approvalData.createdBy === currentUserId.id);
         
-        // Check if current user is the creator
-        return t.member('id').then(function(currentUserId) {
-          var isCreator = (approvalData.createdBy === currentUserId.id);
-          
-          // Use iframe with URL parameters to pass approval data
-          var result = {
-            title: 'Approvals SM',
-            icon: './icon.png',
-            content: {
-              type: 'iframe',
-              url: './approval-section.html?data=' + encodeURIComponent(JSON.stringify(approvalData))
+        // Encode approval data and current user ID as URL parameters
+        var encodedData = encodeURIComponent(JSON.stringify(approvalData));
+        var encodedUserId = encodeURIComponent(currentUserId.id);
+        
+        var result = {
+          title: 'Approvals SM',
+          icon: './icon.png',
+          content: {
+            type: 'iframe',
+            url: t.signUrl('./approval-section.html?data=' + encodedData + '&userId=' + encodedUserId)
+          }
+        };
+
+        if (isCreator) {
+          result.action = {
+            text: 'Reset all',
+            callback: function(t) {
+              // Show confirmation dialog directly
+              if (confirm('Are you sure you want to reset all approvals to pending status?\n\nThis action cannot be undone.')) {
+                resetAllApprovals(t);
+              }
             }
           };
-
-          if (isCreator) {
-            result.action = {
-              text: 'Reset all',
-              callback: function(t) {
-                return resetAllApprovals(t);
-              }
-            };
-          }
-          
-          return result;
-        });
-      })
-      .catch(function(error) {
-        console.error('Error in card-back-section:', error);
-        return null; // Hide section on error
+        }
+        
+        console.log('Final result object:', result);
+        return result;
       });
+    })
+    .catch(function(error) {
+      console.error('Error in card-back-section:', error);
+      return null;
+    });
   },
   
-  // Card buttons capability - shows dynamic button text based on approval status
-  'card-buttons': function(t) {
-    return t.get('card', 'shared', STORAGE_KEY)
-      .then(function(approvalData) {
-        return [{
-          icon: './icon.png',
-          text: approvalData ? 'Manage Approvals' : 'Create Approvals',
-          callback: function(t) {
-            return t.popup({
-              title: 'Manage Approvals',
-              url: './manage-approvals.html',
-              height: 700
-            });
+  'card-buttons': function(t, opts) {
+    return [{
+      icon: './icon.png',
+      text: 'Approvals SM',
+      callback: function(t) {
+        return t.popup({
+          title: 'Manage Approvals',
+          url: './manage-approvals.html',
+          height: 700,
+          callback: function(t, opts) {
+            // This callback runs when t.notifyParent('done') is called from the popup
+            // Card-back-section iframe will automatically reload due to t.set() changing pluginData
+            console.log('Manage approvals popup completed, card-back-section will auto-refresh');
           }
-        }];
-      })
-      .catch(function(error) {
-        console.error('Error in card-buttons:', error);
-        // Return default button even if data loading fails
-        return [{
-          icon: './icon.png',
-          text: 'Approvals SM',
-          callback: function(t) {
-            return t.popup({
-              title: 'Manage Approvals',
-              url: './manage-approvals.html',
-              height: 700
-            });
-          }
-        }];
-      });
+        });
+      }
+    }];
   },
   
   'card-badges': function(t, opts) {
     // Use the centralized badge logic
     return TrelloApprovalBadges.getCardBadges(t, opts);
-  },
+  }
 });
 
-// Function to reset all approvals to pending status
 function resetAllApprovals(t) {
   console.log('🔄 Reset all approvals function called!');
   
-  if (!confirm('Are you sure you want to reset all approvals to pending status?\n\nThis action cannot be undone.')) {
-    return;
-  }
-  
-  return t.get('card', 'shared', STORAGE_KEY, null)
+  t.get('card', 'shared', 'approvals', null)
   .then(function(approvalData) {
     console.log('📄 Got approval data:', approvalData);
     if (!approvalData || !approvalData.members) {
@@ -107,7 +92,7 @@ function resetAllApprovals(t) {
     
     console.log('💾 Saving updated approval data...');
     // Save the updated data
-    return t.set('card', 'shared', STORAGE_KEY, approvalData);
+    return t.set('card', 'shared', 'approvals', approvalData);
   })
   .then(function() {
     console.log('✅ Data saved successfully!');
