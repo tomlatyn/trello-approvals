@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Manage Approvals</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="../css/style.css">
 </head>
 <body class="manage-approvals">
     <div id="loading" class="loading">
@@ -42,8 +42,8 @@
     </div>
     
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
-    <script src="js/utils/mock-data.js"></script>
-    <script src="js/utils/mock-utils.js"></script>
+    <script src="../js/utils/mock-data.js"></script>
+    <script src="../js/utils/mock-utils.js"></script>
     <script>
         // Use Trello's provided Bluebird Promise for better browser compatibility
         var Promise = window.TrelloPowerUp.Promise;
@@ -195,7 +195,7 @@
                 if (isSelected) {
                     checkmark = document.createElement('img');
                     checkmark.className = 'member-checkmark';
-                    checkmark.src = 'icons/member-selected.svg';
+                    checkmark.src = '../icons/member-selected.svg';
                     checkmark.alt = 'Selected';
                 }
                 
@@ -243,7 +243,7 @@
                 // Add checkmark
                 var checkmark = document.createElement('img');
                 checkmark.className = 'member-checkmark';
-                checkmark.src = 'icons/member-selected.svg';
+                checkmark.src = '../icons/member-selected.svg';
                 checkmark.alt = 'Selected';
                 memberItem.appendChild(checkmark);
             }
