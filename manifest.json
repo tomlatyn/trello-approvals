@@ -1,0 +1,18 @@
+{
+  "name": "Approvals SM",
+  "details": "Manage card approvals with member status tracking and approval workflows",
+  "icon": {
+    "url": "./images/icon.png"
+  },
+  "author": "Your Name",
+  "capabilities": [
+    "card-buttons",
+    "card-back-section",
+    "card-badges"
+  ],
+  "connectors": {
+    "iframe": {
+      "url": "./index.html"
+    }
+  }
+}
