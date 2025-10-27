@@ -5,7 +5,7 @@ function cardButtonsHandler(t, opts) {
     callback: function(t) {
       return t.popup({
         title: 'Manage Approvals',
-        url: './manage-approvals.html',
+        url: './views/manage-approvals.html',
         height: 700,
         callback: function(t, opts) {
           // This callback runs when t.notifyParent('done') is called from the popup

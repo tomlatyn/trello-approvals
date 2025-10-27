@@ -18,7 +18,7 @@ function cardBackSectionHandler(t, opts) {
         icon: './images/icon.png',
         content: {
           type: 'iframe',
-          url: t.signUrl('./approval-section.html?data=' + encodedData + '&userId=' + encodedUserId)
+          url: t.signUrl('./views/approval-section.html?data=' + encodedData + '&userId=' + encodedUserId)
         }
       };
 
