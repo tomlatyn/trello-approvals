@@ -9,16 +9,23 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     margin: 0;
     padding: 0;
+    overflow-x: hidden;
+}
+
+/* View wrapper - contains the whole view with background and radius */
+.view-wrapper {
+    padding: 8px;
     background-color: var(--ds-surface, white);
     color: var(--ds-text, #172b4d);
     font-size: 14px;
     line-height: 1.4;
-    overflow-x: hidden;
+    border-radius: 8px;
+    box-sizing: border-box;
 }
 
 /* Dark mode styles - triggered by body.dark-mode class */
-body.dark-mode {
-    background-color: #1d2125 !important;
+body.dark-mode .view-wrapper {
+    background-color: #282E32 !important;
     color: #b6c2cf !important;
 }
 
@@ -32,7 +39,7 @@ body.dark-mode {
     text-align: center;
     padding: 20px;
     color: var(--ds-text-subtle, #6b778c);
-    font-size: 13px;
+    font-size: 10px;
     background-color: var(--ds-surface, white);
 }
 
@@ -72,12 +79,7 @@ body.dark-mode .loading {
 
 /* Main Containers */
 .approval-container {
-    background-color: var(--ds-surface, white);
     overflow: hidden;
-}
-
-body.dark-mode .approval-container {
-    background-color: #1d2125 !important;
 }
 
 /* .content styles handled by body.manage-approvals */
@@ -102,99 +104,102 @@ body.dark-mode .approval-header {
 .approval-member {
     display: flex;
     align-items: center;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--ds-border, #e1e4e8);
-    transition: background-color 0.1s ease;
+    padding: 10px;
+    position: relative;
 }
 
-.approval-member:last-child {
-    border-bottom: none;
+/* Divider between rows and after last row */
+.approval-member::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: #DDDFE5;
+    margin: 5px 0;
 }
 
-.approval-member:hover {
-    background-color: var(--ds-surface-hovered, #f6f8fa);
+
+body.dark-mode .approval-member::after {
+    background-color: #374149;
 }
 
-.approval-member.current-user {
-    background-color: #fff8e1;
-    border-left: 3px solid #ffc107;
-}
-
-.approval-member.current-user:hover {
-    background-color: #fff3cd;
-}
-
-body.dark-mode .approval-member {
-    border-bottom: 1px solid #2c333a !important;
-}
-
-body.dark-mode .approval-member:hover {
-    background-color: #22272b !important;
-}
-
-body.dark-mode .approval-member.current-user {
-    background-color: #2d2a1f !important;
-    border-left: 3px solid #ffc107 !important;
-}
-
-body.dark-mode .approval-member.current-user:hover {
-    background-color: #3a3426 !important;
-}
-
+/* New member item design */
 .member-item {
     display: flex;
     align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid #091e4208;
-    transition: background-color 0.1s ease;
+    max-width: 100%;
+    padding: 10px;
     cursor: pointer;
-    margin: 0 -8px;
-    padding-left: 8px;
-    padding-right: 8px;
-    border-radius: 3px;
+    transition: background-color 0.1s ease;
+    position: relative;
 }
 
 .member-item:hover {
-    background-color: #091e4208;
+    background-color: #f4f5f7;
 }
 
 .member-item.selected {
-    background-color: #e4f3ff;
-}
-
-body.dark-mode .member-item {
-    border-bottom: 1px solid #2c333a !important;
+    background-color: #E5F0FF;
 }
 
 body.dark-mode .member-item:hover {
-    background-color: #22272b !important;
+    background-color: #22272b;
 }
 
 body.dark-mode .member-item.selected {
-    background-color: #1c2b41 !important;
+    background-color: #1C2B41;
 }
 
-.member-checkbox {
-    margin-right: 12px;
-    width: 16px;
-    height: 16px;
-    accent-color: #0079bf;
+/* Divider between rows */
+.member-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: #DDDFE5;
+    margin: 5px 0;
 }
+
+body.dark-mode .member-item:not(:last-child)::after {
+    background-color: #374149;
+}
+
 
 /* Member Info */
 .member-info {
-    flex: 1;
     display: flex;
     align-items: center;
+    min-width: 0;
+    flex: 1;
+    margin-right: 12px;
+}
+
+/* New container layout for approval section */
+.member-left-container {
+    display: flex;
+    align-items: center;
+    width: 50%;
+    min-width: 0;
+}
+
+.member-right-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 50%;
     min-width: 0;
 }
 
 /* Avatar Styles */
 .avatar {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    margin-right: 8px;
+    margin-right: 12px;
     flex-shrink: 0;
     overflow: hidden;
     background: linear-gradient(45deg, #0366d6, #0256cc);
@@ -208,13 +213,15 @@ body.dark-mode .member-item.selected {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* Avatar for manage-approvals (different sizing) */
+/* Avatar for manage-approvals (new sizing) */
 .member-item .avatar {
     width: 32px;
     height: 32px;
     background: linear-gradient(45deg, #0079bf, #026aa7);
     font-size: 12px;
     box-shadow: 0 1px 1px rgba(9, 30, 66, 0.25);
+    margin-right: 12px;
+    flex-shrink: 0;
 }
 
 .avatar img {
@@ -225,18 +232,25 @@ body.dark-mode .member-item.selected {
 }
 
 .member-name {
-    font-weight: 500;
-    color: var(--ds-text, #24292e);
+    font-weight: 600;
+    color: #44546F;
     font-size: 14px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    flex: 1;
+    min-width: 0;
 }
 
 /* Member name for manage-approvals */
 .member-item .member-name {
-    color: var(--ds-text, #172b4d);
-    margin-bottom: 1px;
+    color: #44546F;
+    font-size: 14px;
+    font-weight: 600;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .member-username {
@@ -248,11 +262,26 @@ body.dark-mode .member-item.selected {
 }
 
 body.dark-mode .member-name {
-    color: #b6c2cf !important;
+    color: #B6C2CF !important;
 }
 
 body.dark-mode .member-item .member-name {
-    color: #b6c2cf !important;
+    color: #B6C2CF !important;
+}
+
+/* Checkmark for selected members */
+.member-checkmark {
+    width: 24px;
+    height: 24px;
+    margin-left: auto;
+    flex-shrink: 0;
+    /* Color matches member name: #44546F */
+    filter: brightness(0) saturate(100%) invert(31%) sepia(23%) saturate(1058%) hue-rotate(194deg) brightness(95%) contrast(89%);
+}
+
+body.dark-mode .member-checkmark {
+    /* Color matches member name in dark mode: #B6C2CF */
+    filter: brightness(0) saturate(100%) invert(80%) sepia(23%) saturate(1058%) hue-rotate(169deg) brightness(103%) contrast(101%);
 }
 
 body.dark-mode .member-username {
@@ -261,168 +290,282 @@ body.dark-mode .member-username {
 
 /* Status Section */
 .status-section {
-    width: 100px;
     display: flex;
-    justify-content: flex-start;
-    margin-right: 8px;
+    justify-content: flex-end;
+    align-items: center;
 }
 
+
 .approval-status {
-    padding: 4px 8px;
-    border-radius: 0px;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
+    padding: 4px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: capitalize;
     letter-spacing: 0.3px;
+    display: inline-block;
+    text-align: left;
 }
 
 .status-pending {
-    background-color: #7c3aed;
-    color: white;
+    background-color: #DFD8FD;
+    color: #362C63;
 }
 
 .status-approved {
-    background-color: #10b981;
-    color: white;
+    background-color: #BAF3DB;
+    color: #174B35;
 }
 
 .status-rejected {
-    background-color: #ef4444;
-    color: white;
+    background-color: #FFD5D2;
+    color: #5D1F1A;
+}
+
+/* Dark mode member status tags */
+body.dark-mode .status-pending {
+    background-color: #362C63;
+    color: #DFD8FD;
+}
+
+body.dark-mode .status-approved {
+    background-color: #174B35;
+    color: #BAF3DB;
+}
+
+body.dark-mode .status-rejected {
+    background-color: #5D1F1A;
+    color: #FFD5D2;
 }
 
 /* Status Banner */
 .status-banner {
-    padding: 10px;
-    text-align: center;
+    max-width: 100%;
+    border-radius: 4px;
     font-size: 14px;
-    font-weight: 500;
-    color: white;
+    font-weight: 600;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-top: 8px;
-    border-radius: 0px;
+    padding: 10px;
 }
 
 .banner-pending {
-    background-color: #7c3aed;
+    background-color: #DFD8FD;
+    color: #362C63;
 }
 
 .banner-approved {
-    background-color: #10b981;
+    background-color: #DEFFE6;
+    color: #174B35;
 }
 
 .banner-rejected {
-    background-color: #ef4444;
+    background-color: #FFD5D2;
+    color: #5D1F1A;
+}
+
+/* Dark mode status banner */
+body.dark-mode .banner-pending {
+    background-color: #2E2E4A;
+    color: #DFD8FD;
+}
+
+body.dark-mode .banner-approved {
+    background-color: #345B45;
+    color: #BAF3DB;
+}
+
+body.dark-mode .banner-rejected {
+    background-color: #593538;
+    color: #FFD5D2;
 }
 
 /* Action Buttons */
 .action-buttons {
     display: flex;
-    gap: 6px;
-    opacity: 0;
-    transition: opacity 0.1s ease;
+    gap: 8px;
+    opacity: 1;
     flex-shrink: 0;
-    margin-right: 16px;
+    justify-content: flex-end;
+}
+
+.action-buttons:not(:empty) {
+    margin-left: 16px;
+}
+
+/* Current user row styling */
+.approval-member.current-user {
+    background-color: #EAEAEA;
+}
+
+body.dark-mode .approval-member.current-user {
+    background-color: #23262A;
 }
 
 /* Action buttons for manage-approvals */
 .content .action-buttons {
-    margin-top: 16px;
+    margin-top: 0;
+    margin-left: -16px;
+    margin-right: -16px;
     gap: 8px;
-    padding-top: 16px;
-    border-top: 1px solid #dfe1e6;
+    padding: 0 16px;
     opacity: 1;
+    display: flex;
+    flex-direction: column;
+    width: calc(100% + 32px);
 }
 
-.approval-member:hover .action-buttons,
-.approval-member.current-user .action-buttons {
-    opacity: 1;
-}
 
 .action-btn {
-    padding: 8px 12px;
+    padding: 4px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 500;
     transition: all 0.1s ease;
-    background-color: #f0f0f0;
-    color: #42526e;
+    background-color: #F6F6F7;
+    color: #182A4E;
     display: flex;
     align-items: center;
-    gap: 6px;
-    height: 32px;
+    gap: 4px;
     box-sizing: border-box;
 }
 
 .action-btn:hover {
-    background-color: #e0e0e0;
-    color: #172b4d;
+    background-color: #e8e9ea;
 }
 
-.approve-btn {
-    background-color: #10b981;
-    color: white;
+.approve-btn, .reject-btn, .reset-btn {
+    background-color: #F6F6F7;
+    color: #182A4E;
 }
 
-.approve-btn:hover {
-    background-color: #10b981b7;
+.approve-btn:hover, .reject-btn:hover, .reset-btn:hover {
+    background-color: #e8e9ea;
 }
 
-.reject-btn {
-    background-color: #ef4444;
-    color: white;
+/* Dark mode action buttons */
+body.dark-mode .action-btn,
+body.dark-mode .approve-btn,
+body.dark-mode .reject-btn,
+body.dark-mode .reset-btn {
+    background-color: #2C333A;
+    color: #B6C2CF;
 }
 
-.reject-btn:hover {
-    background-color: #ef4444cc;
+body.dark-mode .action-btn:hover,
+body.dark-mode .approve-btn:hover,
+body.dark-mode .reject-btn:hover,
+body.dark-mode .reset-btn:hover {
+    background-color: #252b31;
 }
 
-.reset-btn {
-    background-color: #f0f0f0;
-    color: #6b778c;
-    border: 1px solid #dfe1e6;
+/* Button icons with hex colors */
+.btn-icon {
+    flex-shrink: 0;
+    width: 16px !important;
+    height: 16px !important;
 }
 
-.reset-btn:hover {
-    background-color: #e0e0e0;
-    color: #42526e;
+/* Light mode: use #182A4E color */
+.btn-icon {
+    filter: brightness(0) saturate(100%) invert(12%) sepia(44%) saturate(1631%) hue-rotate(192deg) brightness(99%) contrast(92%);
 }
 
-/* Save/Delete Buttons */
-.save-button, .delete-button {
-    padding: 8px 16px;
+/* Dark mode: use #B6C2CF color */
+body.dark-mode .btn-icon {
+    filter: brightness(0) saturate(100%) invert(85%) sepia(12%) saturate(288%) hue-rotate(171deg) brightness(91%) contrast(88%);
+}
+
+/* New Button Styles - General button template */
+.btn-primary, .btn-secondary, .btn-create {
     border: none;
-    border-radius: 3px;
+    border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 500;
-    flex: 1;
+    padding: 10px;
     transition: all 0.1s ease;
+    width: 100%;
+    text-align: center;
 }
 
-.save-button {
-    background-color: #0079bf;
+/* Create Approvals Button */
+.btn-create {
+    background-color: #20845A;
     color: white;
 }
 
-.save-button:hover:not(:disabled) {
-    background-color: #005a8b;
+.btn-create:hover:not(:disabled) {
+    background-color: #1a6e49;
 }
 
-.save-button:disabled {
-    background-color: #dfe1e6;
-    color: #a5adba;
+.btn-create:disabled {
+    opacity: 0.4;
     cursor: not-allowed;
 }
 
-.delete-button {
-    background-color: #eb5a46;
+/* Save Changes Button */
+.btn-primary {
+    background-color: #007AD5;
     color: white;
 }
 
-.delete-button:hover {
-    background-color: #cf513d;
+.btn-primary:hover:not(:disabled) {
+    background-color: #0066b3;
+}
+
+.btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Delete Approvals Button */
+.btn-secondary {
+    background-color: #F6F6F7;
+    color: #182A4E;
+}
+
+.btn-secondary:hover {
+    background-color: #e8e9ea;
+}
+
+/* Dark mode button styles */
+body.dark-mode .btn-create {
+    background-color: #345B45;
+    color: #BAF3DB;
+}
+
+body.dark-mode .btn-create:hover:not(:disabled) {
+    background-color: #2d4f3b;
+}
+
+body.dark-mode .btn-primary {
+    background-color: #0A326C;
+    color: #CCE0FF;
+}
+
+body.dark-mode .btn-primary:hover:not(:disabled) {
+    background-color: #092951;
+}
+
+body.dark-mode .btn-secondary {
+    background-color: #2C333A;
+    color: #B6C2CF;
+}
+
+body.dark-mode .btn-secondary:hover {
+    background-color: #252b31;
+}
+
+/* Dark mode disabled button opacity */
+body.dark-mode .btn-create:disabled,
+body.dark-mode .btn-primary:disabled {
+    opacity: 0.2;
 }
 
 /* Count and Selection Styles */
@@ -432,22 +575,11 @@ body.dark-mode .member-username {
     margin-bottom: 12px;
 }
 
-.selected-count {
-    color: #6b778c;
-    font-size: 12px;
-    margin-bottom: 8px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #dfe1e6;
-}
 
-.selected-count.has-selection {
-    color: #0079bf;
-    font-weight: 500;
-}
 
-.members-list {
-    max-height: 300px;
-    overflow-y: auto;
+/* First member row spacing */
+.member-item:first-child {
+    margin-top: 2px;
 }
 
 /* Empty States */
@@ -456,7 +588,7 @@ body.dark-mode .member-username {
     padding: 20px;
     color: var(--ds-text-subtle, #6b778c);
     font-style: italic;
-    font-size: 13px;
+    font-size: 10px;
     background-color: var(--ds-surface, white);
 }
 
@@ -464,7 +596,7 @@ body.dark-mode .member-username {
     text-align: center;
     padding: 20px;
     color: #ef4444;
-    font-size: 13px;
+    font-size: 10px;
     background-color: var(--ds-surface, white);
 }
 
@@ -522,7 +654,7 @@ body.dark-mode #error.error {
     }
     
     .member-name {
-        font-size: 13px;
+        font-size: 10px;
     }
     
     .status-section {
@@ -536,10 +668,76 @@ body.dark-mode #error.error {
 
 /* Manage-approvals specific body styles */
 body.manage-approvals {
-    padding: 16px;
+    padding: 0;
     background-color: var(--ds-surface, #ffffff);
+    height: 100vh;
+}
+
+/* Content padding update */
+body.manage-approvals .content {
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Persons section styling */
+.persons-section {
+    margin-bottom: 16px;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Members container with background (includes header and list) */
+.members-container {
+    background-color: #F8F8F8;
+    border-radius: 5px;
+    padding: 16px 12px;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+body.dark-mode .members-container {
+    background-color: #1D2125;
+}
+
+/* Members list */
+.members-list {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+/* Persons header row */
+.persons-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2px;
+}
+
+.approvers-label {
+    font-size: 10px;
+    color: #5E6C84;
+    font-weight: 500;
+}
+
+.selected-count {
+    font-size: 10px;
+    color: #5E6C84;
+    font-weight: 500;
+}
+
+/* Dark mode colors */
+body.dark-mode .approvers-label,
+body.dark-mode .selected-count {
+    color: #B6C2CF;
 }
 
 body.dark-mode.manage-approvals {
-    background-color: #1d2125 !important;
+    background-color: #282E32 !important;
 }

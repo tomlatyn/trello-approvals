@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Manage Approvals</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="../css/style.css">
 </head>
 <body class="manage-approvals">
     <div id="loading" class="loading">
@@ -12,15 +12,25 @@
     </div>
     
     <div id="content" class="content hidden">
-        <div id="member-count" class="member-count"></div>
-        <div id="selected-count" class="selected-count">No members selected</div>
-        <div id="members-list" class="members-list"></div>
+        <div class="persons-section">
+            <div class="members-container">
+                <div class="persons-header">
+                    <span class="approvers-label">Approvers</span>
+                    <span id="selected-count" class="selected-count">No members selected</span>
+                </div>
+                <div id="member-count" class="member-count"></div>
+                <div id="members-list" class="members-list"></div>
+            </div>
+        </div>
         
         <div class="action-buttons">
-            <button id="save-button" class="save-button" disabled>
+            <button id="create-button" class="btn-create" disabled>
+                Create Approvals
+            </button>
+            <button id="save-button" class="btn-primary hidden" disabled>
                 Save Changes
             </button>
-            <button id="delete-button" class="delete-button hidden">
+            <button id="delete-button" class="btn-secondary hidden">
                 Delete Approvals
             </button>
         </div>
@@ -32,9 +42,11 @@
     </div>
     
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
-    <script src="js/mock-data.js"></script>
-    <script src="js/mock-utils.js"></script>
+    <script src="../js/utils/mock-data.js"></script>
+    <script src="../js/utils/mock-utils.js"></script>
     <script>
+        // Use Trello's provided Bluebird Promise for better browser compatibility
+        var Promise = window.TrelloPowerUp.Promise;
         var t = TrelloPowerUp.iframe();
         var allMembers = [];
         var selectedMembers = [];
@@ -42,27 +54,37 @@
         
         // Apply theme on page load
         function applyTheme() {
-            var context = t.getContext();
-            var theme = context.theme || context.initialTheme || 'light';
-            
-            if (theme === 'dark') {
-                document.body.classList.add('dark-mode');
-            } else {
+            try {
+                var context = t.getContext();
+                var theme = context ? (context.theme || context.initialTheme || 'light') : 'light';
+                
+                if (theme === 'dark') {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+                
+                console.log('Applied theme:', theme);
+            } catch (error) {
+                console.log('Theme context not available, using light theme:', error.message);
                 document.body.classList.remove('dark-mode');
             }
-            
-            console.log('Applied theme:', theme);
         }
         
         // Subscribe to theme changes
-        var unsubscribeTheme = t.subscribeToThemeChanges(function(theme) {
-            console.log('Theme changed to:', theme);
-            if (theme === 'dark') {
-                document.body.classList.add('dark-mode');
-            } else {
-                document.body.classList.remove('dark-mode');
-            }
-        });
+        var unsubscribeTheme = null;
+        try {
+            unsubscribeTheme = t.subscribeToThemeChanges(function(theme) {
+                console.log('Theme changed to:', theme);
+                if (theme === 'dark') {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+            });
+        } catch (error) {
+            console.log('Theme subscription not available:', error.message);
+        }
 
         function showLoading() {
             document.getElementById('loading').classList.remove('hidden');
@@ -104,7 +126,15 @@
                 if (existingApprovals && existingApprovals.members) {
                     // Pre-select existing members
                     selectedMembers = Object.keys(existingApprovals.members);
+                    // Show save/delete buttons, hide create button
+                    document.getElementById('create-button').classList.add('hidden');
+                    document.getElementById('save-button').classList.remove('hidden');
                     document.getElementById('delete-button').classList.remove('hidden');
+                } else {
+                    // Show only create button
+                    document.getElementById('create-button').classList.remove('hidden');
+                    document.getElementById('save-button').classList.add('hidden');
+                    document.getElementById('delete-button').classList.add('hidden');
                 }
                 
                 displayMembers(allMembers);
@@ -139,14 +169,6 @@
                     memberItem.classList.add('selected');
                 }
                 
-                var checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.className = 'member-checkbox';
-                checkbox.checked = isSelected;
-                checkbox.addEventListener('change', function() {
-                    toggleMemberSelection(member.id);
-                });
-                
                 var avatar = document.createElement('div');
                 avatar.className = 'avatar';
                 
@@ -164,26 +186,28 @@
                     avatar.textContent = getInitials(member);
                 }
                 
-                var memberInfo = document.createElement('div');
-                memberInfo.className = 'member-info';
-                
                 var name = document.createElement('div');
                 name.className = 'member-name';
                 name.textContent = member.fullName || member.username || 'Unknown Member';
                 
-                memberInfo.appendChild(name);
+                // Checkmark for selected members
+                var checkmark = null;
+                if (isSelected) {
+                    checkmark = document.createElement('img');
+                    checkmark.className = 'member-checkmark';
+                    checkmark.src = '../icons/member-selected.svg';
+                    checkmark.alt = 'Selected';
+                }
                 
-                
-                memberItem.addEventListener('click', function(e) {
-                    if (e.target.type !== 'checkbox') {
-                        checkbox.checked = !checkbox.checked;
-                        toggleMemberSelection(member.id);
-                    }
+                memberItem.addEventListener('click', function() {
+                    toggleMemberSelection(member.id);
                 });
                 
-                memberItem.appendChild(checkbox);
                 memberItem.appendChild(avatar);
-                memberItem.appendChild(memberInfo);
+                memberItem.appendChild(name);
+                if (checkmark) {
+                    memberItem.appendChild(checkmark);
+                }
                 
                 membersList.appendChild(memberItem);
             });
@@ -208,9 +232,20 @@
             if (index > -1) {
                 selectedMembers.splice(index, 1);
                 memberItem.classList.remove('selected');
+                // Remove checkmark
+                var checkmark = memberItem.querySelector('.member-checkmark');
+                if (checkmark) {
+                    checkmark.remove();
+                }
             } else {
                 selectedMembers.push(memberId);
                 memberItem.classList.add('selected');
+                // Add checkmark
+                var checkmark = document.createElement('img');
+                checkmark.className = 'member-checkmark';
+                checkmark.src = '../icons/member-selected.svg';
+                checkmark.alt = 'Selected';
+                memberItem.appendChild(checkmark);
             }
             
             updateSelectedCount();
@@ -218,16 +253,18 @@
         
         function updateSelectedCount() {
             var selectedCountEl = document.getElementById('selected-count');
+            var createButton = document.getElementById('create-button');
             var saveButton = document.getElementById('save-button');
             
             if (selectedMembers.length > 0) {
                 selectedCountEl.textContent = selectedMembers.length + ' member' + 
                     (selectedMembers.length !== 1 ? 's' : '') + ' selected';
-                selectedCountEl.classList.add('has-selection');
+                selectedCountEl.style.display = 'inline';
+                createButton.disabled = false;
                 saveButton.disabled = false;
             } else {
-                selectedCountEl.textContent = 'No members selected';
-                selectedCountEl.classList.remove('has-selection');
+                selectedCountEl.style.display = 'none';
+                createButton.disabled = true;
                 saveButton.disabled = true;
             }
         }
@@ -269,33 +306,42 @@
                 };
             });
             
-            // Get current member and save using the new API wrapper
-            TrelloMockUtils.api.getCurrentMember()
+            // Get current member and save data directly
+            t.member('id')
             .then(function(currentMember) {
                 approvalData.createdBy = existingApprovals ? existingApprovals.createdBy : currentMember.id;
                 
-                return TrelloMockUtils.api.saveApprovalData(approvalData);
+                // Save approval data directly to Trello
+                return t.set('card', 'shared', 'approvals', approvalData);
             })
             .then(function() {
                 console.log('Approvals saved successfully');
-                return TrelloMockUtils.api.closePopup();
+                // Notify parent that we're done (optional but good practice)
+                return t.notifyParent('done');
+            })
+            .then(function() {
+                t.closePopup();
             })
             .catch(function(error) {
                 console.error('Error saving approvals:', error);
                 alert('Failed to save approvals. Please try again.');
             });
         }
-        
+
         function deleteApprovals() {
             if (!confirm('Are you sure you want to delete all approvals for this card? This action cannot be undone.')) {
                 return;
             }
             
-            // Delete using the new API wrapper
-            TrelloMockUtils.api.deleteApprovalData()
+            // Delete approval data directly from Trello
+            t.remove('card', 'shared', 'approvals')
             .then(function() {
                 console.log('Approvals deleted successfully');
-                return TrelloMockUtils.api.closePopup();
+                // Notify parent that we're done (optional but good practice)
+                return t.notifyParent('done');
+            })
+            .then(function() {
+                t.closePopup();
             })
             .catch(function(error) {
                 console.error('Error deleting approvals:', error);
@@ -308,6 +354,10 @@
             loadData();
         });
         
+        document.getElementById('create-button').addEventListener('click', function() {
+            saveApprovals();
+        });
+        
         document.getElementById('save-button').addEventListener('click', function() {
             saveApprovals();
         });
@@ -317,8 +367,18 @@
         });
         
         // Initialize theme and load data when popup opens
-        applyTheme();
-        loadData();
+        function initialize() {
+            // Ensure mock utilities are available if needed
+            if (window.TrelloMockUtils && window.TrelloMockUtils.isMockMode()) {
+                window.TrelloMockUtils.mockTrelloIframe();
+            }
+            
+            applyTheme();
+            loadData();
+        }
+        
+        // Wait a bit for all scripts to load
+        setTimeout(initialize, 100);
     </script>
 </body>
 </html>
