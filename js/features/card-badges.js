@@ -235,3 +235,8 @@ window.TrelloApprovalBadges = {
         });
     }
 };
+
+function cardBadgesHandler(t, opts) {
+  // Use the centralized badge logic
+  return TrelloApprovalBadges.getCardBadges(t, opts);
+}

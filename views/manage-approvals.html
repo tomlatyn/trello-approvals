@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Manage Approvals</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="../css/style.css">
 </head>
 <body class="manage-approvals">
     <div id="loading" class="loading">
@@ -42,8 +42,8 @@
     </div>
     
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
-    <script src="js/mock-data.js"></script>
-    <script src="js/mock-utils.js"></script>
+    <script src="../js/utils/mock-data.js"></script>
+    <script src="../js/utils/mock-utils.js"></script>
     <script>
         // Use Trello's provided Bluebird Promise for better browser compatibility
         var Promise = window.TrelloPowerUp.Promise;
@@ -195,7 +195,7 @@
                 if (isSelected) {
                     checkmark = document.createElement('img');
                     checkmark.className = 'member-checkmark';
-                    checkmark.src = 'icons/member-selected.svg';
+                    checkmark.src = '../icons/member-selected.svg';
                     checkmark.alt = 'Selected';
                 }
                 
@@ -243,7 +243,7 @@
                 // Add checkmark
                 var checkmark = document.createElement('img');
                 checkmark.className = 'member-checkmark';
-                checkmark.src = 'icons/member-selected.svg';
+                checkmark.src = '../icons/member-selected.svg';
                 checkmark.alt = 'Selected';
                 memberItem.appendChild(checkmark);
             }
@@ -316,20 +316,18 @@
             })
             .then(function() {
                 console.log('Approvals saved successfully');
-                // Notify parent that we're done, this will trigger the callback
+                // Notify parent that we're done (optional but good practice)
                 return t.notifyParent('done');
             })
             .then(function() {
-                // Close the popup after notifying parent
-                t.set()
-                return t.closePopup();
+                t.closePopup();
             })
             .catch(function(error) {
                 console.error('Error saving approvals:', error);
                 alert('Failed to save approvals. Please try again.');
             });
         }
-        
+
         function deleteApprovals() {
             if (!confirm('Are you sure you want to delete all approvals for this card? This action cannot be undone.')) {
                 return;
@@ -339,13 +337,11 @@
             t.remove('card', 'shared', 'approvals')
             .then(function() {
                 console.log('Approvals deleted successfully');
-                // Notify parent that we're done, this will trigger the callback
+                // Notify parent that we're done (optional but good practice)
                 return t.notifyParent('done');
             })
             .then(function() {
-                // Close the popup after notifying parent
-                t.set()
-                return t.closePopup();
+                t.closePopup();
             })
             .catch(function(error) {
                 console.error('Error deleting approvals:', error);

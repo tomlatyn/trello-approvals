@@ -3,11 +3,11 @@
 <head>
     <meta charset="utf-8">
     <title>Approval Status</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
     <div class="view-wrapper">
-        <div id="loading" class="loading">
+        <div id="loading" class="loading hidden">
             <div class="spinner"></div>
             <p>Loading approvals...</p>
         </div>
@@ -28,11 +28,7 @@
     </div>
     
     <script src="https://p.trellocdn.com/power-up.min.js"></script>
-    <script src="js/mock-data.js"></script>
-    <script src="js/mock-utils.js"></script>
     <script>
-        // Use Trello's provided Bluebird Promise for better browser compatibility
-        var Promise = window.TrelloPowerUp.Promise;
         var t = TrelloPowerUp.iframe();
         var currentUserId = null;
         var approvalData = null;
@@ -71,14 +67,6 @@
             console.log('Theme subscription not available:', error.message);
         }
 
-        function showLoading() {
-            document.getElementById('loading').classList.remove('hidden');
-            document.getElementById('approval-container').classList.add('hidden');
-            document.getElementById('status-banner-container').innerHTML = '';
-            document.getElementById('no-approvals').classList.add('hidden');
-            document.getElementById('error').classList.add('hidden');
-        }
-        
         function showApprovals() {
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('approval-container').classList.remove('hidden');
@@ -126,45 +114,58 @@
             }, 50);
         }
         
+        // Get data from URL parameters
+        function getDataFromURL() {
+            var urlParams = new URLSearchParams(window.location.search);
+            var dataParam = urlParams.get('data');
+            var userIdParam = urlParams.get('userId');
+            
+            if (!dataParam || !userIdParam) {
+                console.error('Missing required URL parameters');
+                return null;
+            }
+            
+            try {
+                var decodedData = decodeURIComponent(dataParam);
+                var parsedData = JSON.parse(decodedData);
+                var decodedUserId = decodeURIComponent(userIdParam);
+                
+                return {
+                    approvalData: parsedData,
+                    currentUserId: decodedUserId
+                };
+            } catch (error) {
+                console.error('Error parsing URL parameters:', error);
+                return null;
+            }
+        }
+        
         function loadApprovals() {
-            showLoading();
-            
             console.log('🔍 Loading approvals at', new Date().toISOString());
-            console.log('🔍 Mock mode:', TrelloMockUtils.isMockMode());
             
-            // Use the new API wrapper that automatically handles mock vs real data
-            Promise.all([
-                TrelloMockUtils.api.getCurrentMember(),
-                TrelloMockUtils.api.getApprovalData()
-            ])
-            .then(function(results) {
-                console.log('✅ Promise.all resolved with results:', results);
-                var currentMember = results[0];
-                var data = results[1];
-                
-                console.log('📝 Current member:', currentMember);
-                console.log('📝 Approval data:', data);
-                
-                currentUserId = currentMember.id;
-                approvalData = data;
-                
-                console.log('Current user ID:', currentUserId);
-                console.log('Approval data loaded:', approvalData);
-                
-                if (!approvalData || !approvalData.members || Object.keys(approvalData.members).length === 0) {
-                    console.log('No approval data found');
-                    showNoApprovals();
-                } else {
-                    console.log('Displaying approvals for', Object.keys(approvalData.members).length, 'members');
-                    displayApprovals();
-                    showApprovals();
-                }
-            })
-            .catch(function(error) {
-                console.error('❌ Error loading approvals:', error);
-                console.error('❌ Error stack:', error.stack);
+            // Get data from URL parameters - no loading state needed since data is immediately available
+            var urlData = getDataFromURL();
+            
+            if (!urlData) {
+                console.error('❌ Failed to get data from URL parameters');
                 showError();
-            });
+                return;
+            }
+            
+            currentUserId = urlData.currentUserId;
+            approvalData = urlData.approvalData;
+            
+            console.log('📝 Current user ID:', currentUserId);
+            console.log('📝 Approval data:', approvalData);
+            
+            if (!approvalData || !approvalData.members || Object.keys(approvalData.members).length === 0) {
+                console.log('No approval data found');
+                showNoApprovals();
+            } else {
+                console.log('Displaying approvals for', Object.keys(approvalData.members).length, 'members');
+                displayApprovals();
+                showApprovals();
+            }
         }
         
         function displayApprovals() {
@@ -336,7 +337,7 @@
             if (className.includes('approve-btn')) {
                 var icon = document.createElement('img');
                 icon.className = 'btn-icon';
-                icon.src = 'icons/button-approve.svg';
+                icon.src = '../icons/button-approve.svg';
                 icon.alt = 'Approve';
                 icon.style.width = '16pt';
                 icon.style.height = '16pt';
@@ -344,7 +345,7 @@
             } else if (className.includes('reject-btn')) {
                 var icon = document.createElement('img');
                 icon.className = 'btn-icon';
-                icon.src = 'icons/button-reject.svg';
+                icon.src = '../icons/button-reject.svg';
                 icon.alt = 'Reject';
                 icon.style.width = '16pt';
                 icon.style.height = '16pt';
@@ -374,18 +375,18 @@
             
             console.log('Updated approval data:', approvalData);
             
-            // Save updated data using the new API wrapper
-            TrelloMockUtils.api.saveApprovalData(approvalData)
+            // Save updated data using direct Trello API
+            t.set('card', 'shared', 'approvals', approvalData)
             .then(function() {
                 console.log('Approval status updated successfully');
-                // Refresh the display
+                // Refresh the display immediately
                 displayApprovals();
             })
             .catch(function(error) {
                 console.error('Error updating approval status:', error);
                 alert('Failed to update approval status. Please try again.');
                 
-                // Reload the approvals to reset the display
+                // On error, reload to get fresh data
                 loadApprovals();
             });
         }
@@ -412,17 +413,12 @@
         
         // Initialize theme and load approvals when section opens
         function initialize() {
-            // Ensure mock utilities are available if needed
-            if (window.TrelloMockUtils && window.TrelloMockUtils.isMockMode()) {
-                window.TrelloMockUtils.mockTrelloIframe();
-            }
-            
             applyTheme();
-            loadApprovals();
+            loadApprovals(); // Load immediately without any loading state
         }
         
-        // Wait a bit for all scripts to load
-        setTimeout(initialize, 100);
+        // Start immediately
+        initialize();
     </script>
 </body>
 </html>
